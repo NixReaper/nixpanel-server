@@ -81,7 +81,7 @@ export default function Login() {
         </form>
 
         <p className="text-center text-[#64748b] text-xs mt-4">
-          NixServer v0.2.0 · Port 2087
+          NixServer v0.3.0 · Port 2087
         </p>
       </div>
     </div>

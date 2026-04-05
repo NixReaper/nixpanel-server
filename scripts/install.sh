@@ -28,7 +28,7 @@ cat <<'EOF'
  Open-Source Web Hosting Control Panel
 EOF
 echo -e "${RESET}"
-echo -e " Version  : ${BOLD}0.2.0${RESET}"
+echo -e " Version  : ${BOLD}0.3.0${RESET}"
 echo -e " GitHub   : ${BOLD}https://github.com/NixReaper/nixpanel-server${RESET}"
 echo -e " NixServer: ${BOLD}https://<your-ip>:2087${RESET}"
 echo -e " NixClient: ${BOLD}https://<your-ip>:2083${RESET}"
