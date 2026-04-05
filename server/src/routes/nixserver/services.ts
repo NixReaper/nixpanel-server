@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { requireAdmin } from '../../middleware/auth.js'
-import { exec, MANAGED_SERVICES as _ } from '../../core/exec.js'
+import { exec } from '../../core/exec.js'
 import { getServiceStatus, MANAGED_SERVICES } from '../../core/system.js'
 
 const ServiceActionSchema = z.object({

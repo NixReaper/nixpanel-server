@@ -28,7 +28,7 @@ function signTokens(
 
   const refreshToken = fastify.jwt.sign(
     { ...payload, type: 'refresh' },
-    { secret: config.jwt.refreshSecret, expiresIn: config.jwt.refreshExpiresIn }
+    { expiresIn: config.jwt.refreshExpiresIn }
   )
 
   return { accessToken, refreshToken }
@@ -157,8 +157,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
     let payload: JwtPayload & { type?: string }
     try {
       payload = fastify.jwt.verify<JwtPayload & { type?: string }>(
-        body.data.refreshToken,
-        { secret: config.jwt.refreshSecret }
+        body.data.refreshToken
       )
     } catch {
       return reply.code(401).send({ success: false, error: 'Invalid or expired refresh token' })
@@ -183,7 +182,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
     const accessToken = fastify.jwt.sign(newPayload, { expiresIn: config.jwt.expiresIn })
     const newRefresh = fastify.jwt.sign(
       { ...newPayload, type: 'refresh' },
-      { secret: config.jwt.refreshSecret, expiresIn: config.jwt.refreshExpiresIn }
+      { expiresIn: config.jwt.refreshExpiresIn }
     )
 
     const expiresAt = new Date()
