@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { RefreshCw, Globe, Plus, Trash2, Pencil } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { RefreshCw, Globe, Plus, Trash2 } from 'lucide-react'
 import { api } from '../api/client'
 
 interface Zone { id: number; domain: string; status: string; account: { username: string }; _count: { records: number } }

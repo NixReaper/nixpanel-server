@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { HardDrive, Download, Trash2, RefreshCw, Play } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { HardDrive, Trash2, RefreshCw, Play } from 'lucide-react'
 import { api } from '../api/client'
 
 interface Backup { path: string; filename: string; size: number; createdAt: string }

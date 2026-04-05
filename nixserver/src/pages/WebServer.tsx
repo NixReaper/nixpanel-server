@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Server, RefreshCw, RotateCcw, CheckCircle, XCircle } from 'lucide-react'
 import { api } from '../api/client'
 
 export default function WebServer() {
   const [status, setStatus] = useState<{ nginx: { active: boolean }; apache: { active: boolean } } | null>(null)
-  const [vhosts, setVhosts] = useState<{ domain: string; path: string }[]>([])
+  const [, setVhosts] = useState<{ domain: string; path: string }[]>([])
   const [logs, setLogs] = useState<{ lines: string[] } | null>(null)
   const [logType, setLogType] = useState<'access' | 'error'>('access')
   const [loading, setLoading] = useState(false)

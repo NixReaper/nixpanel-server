@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Users, Globe, Server, HardDrive, Activity, AlertTriangle } from 'lucide-react'
+import { Users, Server, HardDrive, Activity } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { api } from '../api/client'
 
@@ -22,7 +22,7 @@ interface StatCard {
   label: string
   value: string | number
   sub?: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: React.ComponentType<{ size?: number | string; className?: string }>
   color: string
 }
 

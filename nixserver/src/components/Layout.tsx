@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Package, UserCog, Globe, Mail, Shield,
-  Server, Database, HardDrive, Settings, LogOut, Menu, X,
+  Server, HardDrive, Settings, LogOut, Menu, X,
   Activity, Lock, BarChart3, Cpu
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'

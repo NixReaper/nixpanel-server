@@ -396,7 +396,7 @@ step "Running database migrations"
 cd "$INSTALL_DIR/server"
 npx prisma generate
 DATABASE_URL="mysql://${NIXPANEL_DB_USER}:${NIXPANEL_DB_PASS}@localhost:3306/${NIXPANEL_DB_NAME}" \
-  npx prisma migrate deploy
+  npx prisma db push
 success "Database schema applied"
 
 # ── Seed default data ─────────────────────────────────────────────────────────

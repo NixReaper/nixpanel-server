@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Shield, Plus, Trash2, CheckCircle } from 'lucide-react'
+import { Plus, Trash2, CheckCircle } from 'lucide-react'
 import { api } from '../api/client'
 
 interface BlockedIp { id: number; ip: string; reason: string | null; createdAt: string }
@@ -16,10 +16,7 @@ export default function Security() {
   const [events, setEvents] = useState<SecurityEvent[]>([])
   const [newIp, setNewIp] = useState('')
   const [reason, setReason] = useState('')
-  const [loading, setLoading] = useState(false)
-
   const fetch = async () => {
-    setLoading(true)
     try {
       const [b, e] = await Promise.all([
         api.get('/nixserver/security/blocked-ips'),
@@ -27,7 +24,7 @@ export default function Security() {
       ])
       setBlocked(b.data.data)
       setEvents(e.data.data.items ?? e.data.data)
-    } finally { setLoading(false) }
+    } catch {}
   }
 
   useEffect(() => { fetch() }, [])

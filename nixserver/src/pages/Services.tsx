@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Play, Square, RefreshCw, AlertCircle, CheckCircle, MinusCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { RefreshCw, AlertCircle, CheckCircle, MinusCircle } from 'lucide-react'
 import { api } from '../api/client'
 
 interface Service { name: string; status: 'running' | 'stopped' | 'failed' | 'unknown'; enabled: boolean }

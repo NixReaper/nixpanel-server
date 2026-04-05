@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Mail, Plus, Trash2, RefreshCw } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Plus, Trash2, RefreshCw } from 'lucide-react'
 import { api } from '../api/client'
 
 interface EmailAccount { id: number; address: string; domain: string; quotaMb: number; usedMb: number; status: string }
