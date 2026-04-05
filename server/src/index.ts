@@ -13,10 +13,10 @@ async function start() {
 
     app = await buildApp()
 
-    // WHM server on port 2087
-    await app.listen({ port: config.server.whmPort, host: config.server.host })
-    console.log(`NixPanel WHM running on port ${config.server.whmPort}`)
-    console.log(`NixPanel cPanel API running on port ${config.server.whmPort} (/api/cpanel)`)
+    // NixServer on port 2087
+    await app.listen({ port: config.server.nixserverPort, host: config.server.host })
+    console.log(`NixServer running on port ${config.server.nixserverPort}`)
+    console.log(`NixClient API running on port ${config.server.nixserverPort} (/api/cpanel)`)
 
   } catch (err) {
     console.error('Failed to start server:', err)

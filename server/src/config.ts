@@ -16,8 +16,8 @@ export const config = {
 
   server: {
     host: optional('HOST', '0.0.0.0'),
-    whmPort: parseInt(optional('WHM_PORT', '2087'), 10),
-    cpanelPort: parseInt(optional('CPANEL_PORT', '2083'), 10),
+    nixserverPort: parseInt(optional('NIXSERVER_PORT', '2087'), 10),
+    nixclientPort: parseInt(optional('NIXCLIENT_PORT', '2083'), 10),
   },
 
   db: {

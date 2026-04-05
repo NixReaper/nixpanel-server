@@ -9,8 +9,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { config } from './config.js'
 import authRoutes from './routes/auth/index.js'
-import whmRoutes from './routes/whm/index.js'
-import cpanelRoutes from './routes/cpanel/index.js'
+import nixserverRoutes from './routes/nixserver/index.js'
+import nixclientRoutes from './routes/nixclient/index.js'
 import { getSystemStats } from './core/system.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -59,21 +59,21 @@ export async function buildApp() {
 
   // ─── Static files ────────────────────────────────────────────────────────────
 
-  // WHM frontend served from /whm
-  const whmDist = path.resolve(__dirname, '../../whm/dist')
-  const cpanelDist = path.resolve(__dirname, '../../cpanel/dist')
+  // NixServer frontend
+  const whmDist = path.resolve(__dirname, '../../nixserver/dist')
+  const cpanelDist = path.resolve(__dirname, '../../nixclient/dist')
 
   // ─── API Routes ──────────────────────────────────────────────────────────────
 
   fastify.register(authRoutes, { prefix: '/api/auth' })
-  fastify.register(whmRoutes, { prefix: '/api/whm' })
-  fastify.register(cpanelRoutes, { prefix: '/api/cpanel' })
+  fastify.register(nixserverRoutes, { prefix: '/api/nixserver' })
+  fastify.register(nixclientRoutes, { prefix: '/api/nixclient' })
 
   // ─── Health check ─────────────────────────────────────────────────────────────
 
   fastify.get('/api/health', async () => ({
     status: 'ok',
-    version: '0.1.0',
+    version: '0.2.0',
     timestamp: new Date().toISOString(),
   }))
 

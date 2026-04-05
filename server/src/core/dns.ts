@@ -45,7 +45,7 @@ $TTL ${ttl}
 www       IN    A     ${ip}
 mail      IN    A     ${ip}
 ftp       IN    A     ${ip}
-cpanel    IN    A     ${ip}
+nixclient IN    A     ${ip}
 webmail   IN    A     ${ip}
 
 ; MX record

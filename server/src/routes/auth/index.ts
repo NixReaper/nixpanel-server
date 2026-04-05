@@ -37,7 +37,7 @@ function signTokens(
 export default async function authRoutes(fastify: FastifyInstance) {
   /**
    * POST /api/auth/login
-   * Login for admin, reseller, or cPanel user.
+   * Login for admin, reseller, or NixClient user.
    * Body: { username, password }
    * Returns: { accessToken, refreshToken, role, user }
    */
@@ -111,7 +111,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
       })
     }
 
-    // Try hosting account (cPanel user)
+    // Try hosting account (NixClient user)
     const account = await prisma.account.findUnique({ where: { username } })
     if (account) {
       if (account.status !== 'active') {

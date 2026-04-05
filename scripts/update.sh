@@ -30,8 +30,8 @@ success "Migrations applied"
 
 step "Rebuilding frontends"
 cd "$INSTALL_DIR"
-npm run build --workspace=whm --silent
-npm run build --workspace=cpanel --silent
+npm run build --workspace=nixserver --silent
+npm run build --workspace=nixclient --silent
 success "Frontends rebuilt"
 
 step "Rebuilding server"
