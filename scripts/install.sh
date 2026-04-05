@@ -131,6 +131,14 @@ read -r -p "Continue? [Y/n] " CONFIRM
 CONFIRM="${CONFIRM:-Y}"
 [[ "$CONFIRM" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
 
+# ── Logging ───────────────────────────────────────────────────────────────────
+LOG_FILE="/var/log/nixpanel-install.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "=================================================="
+echo " NixPanel Install Log — $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+echo " OS: ${PRETTY_NAME:-$OS_ID}  Arch: $(uname -m)"
+echo "=================================================="
+
 # ── Update package index ──────────────────────────────────────────────────────
 step "Updating package index"
 if [[ "$PKG_MGR" == "apt" ]]; then
@@ -657,6 +665,7 @@ echo ""
 echo -e "  ${BOLD}Files${RESET}"
 echo -e "  Install   : ${INSTALL_DIR}"
 echo -e "  Config    : ${INSTALL_DIR}/.env"
+echo -e "  Install log: ${LOG_FILE}"
 echo -e "  Service   : systemctl status nixpanel"
 echo -e "  Logs      : journalctl -u nixpanel -f"
 echo ""
