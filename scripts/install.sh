@@ -394,7 +394,7 @@ success "npm dependencies installed"
 step "Running database migrations"
 
 cd "$INSTALL_DIR/server"
-npx prisma generate --silent
+npx prisma generate
 DATABASE_URL="mysql://${NIXPANEL_DB_USER}:${NIXPANEL_DB_PASS}@localhost:3306/${NIXPANEL_DB_NAME}" \
   npx prisma migrate deploy
 success "Database schema applied"
