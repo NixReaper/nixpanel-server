@@ -93,60 +93,6 @@ export default function Setup() {
     }
   }
 
-  // ── Step content ─────────────────────────────────────────────────────────────
-  function StepContent() {
-    if (step === 1) return (
-      <>
-        <h2 className="text-white text-lg font-semibold mb-1">Server Identity</h2>
-        <p className="text-[#64748b] text-sm mb-6">Set the fully-qualified hostname for this server.</p>
-        <Field label="Hostname (FQDN)" placeholder="server.example.com" value={form.hostname} onChange={set('hostname')} autoFocus />
-        <p className="text-[#64748b] text-xs mt-2">
-          Example: <span className="text-[#94a3b8]">server.yourdomain.com</span>
-        </p>
-      </>
-    )
-
-    if (step === 2) return (
-      <>
-        <h2 className="text-white text-lg font-semibold mb-1">Nameservers</h2>
-        <p className="text-[#64748b] text-sm mb-6">These nameservers will be used for hosted domains.</p>
-        <Field label="Primary Nameserver (NS1)" placeholder="ns1.yourdomain.com" value={form.nameserver1} onChange={set('nameserver1')} autoFocus />
-        <div className="mt-4">
-          <Field label="Secondary Nameserver (NS2)" placeholder="ns2.yourdomain.com" value={form.nameserver2} onChange={set('nameserver2')} />
-        </div>
-      </>
-    )
-
-    if (step === 3) return (
-      <>
-        <h2 className="text-white text-lg font-semibold mb-1">Admin Account</h2>
-        <p className="text-[#64748b] text-sm mb-6">Update your admin email and optionally set a new password.</p>
-        <Field label="Admin Email" type="email" placeholder="admin@yourdomain.com" value={form.adminEmail} onChange={set('adminEmail')} autoFocus />
-        <div className="mt-4">
-          <Field label="New Password (optional)" type="password" placeholder="Leave blank to keep current" value={form.adminPassword} onChange={set('adminPassword')} />
-        </div>
-        <div className="mt-4">
-          <Field label="Confirm Password" type="password" placeholder="Re-enter new password" value={form.confirmPassword} onChange={set('confirmPassword')} />
-        </div>
-      </>
-    )
-
-    // Step 4 — Review
-    return (
-      <>
-        <h2 className="text-white text-lg font-semibold mb-1">Review & Finish</h2>
-        <p className="text-[#64748b] text-sm mb-6">Confirm your settings before applying them.</p>
-        <div className="space-y-3">
-          <ReviewRow label="Hostname"           value={form.hostname} />
-          <ReviewRow label="Primary Nameserver" value={form.nameserver1} />
-          <ReviewRow label="Secondary Nameserver" value={form.nameserver2} />
-          <ReviewRow label="Admin Email"        value={form.adminEmail} />
-          <ReviewRow label="Admin Password"     value={form.adminPassword ? '••••••••' : '(unchanged)'} />
-        </div>
-      </>
-    )
-  }
-
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0f1117] flex items-center justify-center p-4">
@@ -190,7 +136,52 @@ export default function Setup() {
 
         {/* Card */}
         <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-6">
-          <StepContent />
+
+          {/* Step 1 — Server Identity */}
+          {step === 1 && <>
+            <h2 className="text-white text-lg font-semibold mb-1">Server Identity</h2>
+            <p className="text-[#64748b] text-sm mb-6">Set the fully-qualified hostname for this server.</p>
+            <Field label="Hostname (FQDN)" placeholder="server.example.com" value={form.hostname} onChange={set('hostname')} autoFocus />
+            <p className="text-[#64748b] text-xs mt-2">
+              Example: <span className="text-[#94a3b8]">server.yourdomain.com</span>
+            </p>
+          </>}
+
+          {/* Step 2 — Nameservers */}
+          {step === 2 && <>
+            <h2 className="text-white text-lg font-semibold mb-1">Nameservers</h2>
+            <p className="text-[#64748b] text-sm mb-6">These nameservers will be used for hosted domains.</p>
+            <Field label="Primary Nameserver (NS1)" placeholder="ns1.yourdomain.com" value={form.nameserver1} onChange={set('nameserver1')} autoFocus />
+            <div className="mt-4">
+              <Field label="Secondary Nameserver (NS2)" placeholder="ns2.yourdomain.com" value={form.nameserver2} onChange={set('nameserver2')} />
+            </div>
+          </>}
+
+          {/* Step 3 — Admin Account */}
+          {step === 3 && <>
+            <h2 className="text-white text-lg font-semibold mb-1">Admin Account</h2>
+            <p className="text-[#64748b] text-sm mb-6">Update your admin email and optionally set a new password.</p>
+            <Field label="Admin Email" type="email" placeholder="admin@yourdomain.com" value={form.adminEmail} onChange={set('adminEmail')} autoFocus />
+            <div className="mt-4">
+              <Field label="New Password (optional)" type="password" placeholder="Leave blank to keep current" value={form.adminPassword} onChange={set('adminPassword')} />
+            </div>
+            <div className="mt-4">
+              <Field label="Confirm Password" type="password" placeholder="Re-enter new password" value={form.confirmPassword} onChange={set('confirmPassword')} />
+            </div>
+          </>}
+
+          {/* Step 4 — Review */}
+          {step === 4 && <>
+            <h2 className="text-white text-lg font-semibold mb-1">Review & Finish</h2>
+            <p className="text-[#64748b] text-sm mb-6">Confirm your settings before applying them.</p>
+            <div className="space-y-3">
+              <ReviewRow label="Hostname"              value={form.hostname} />
+              <ReviewRow label="Primary Nameserver"    value={form.nameserver1} />
+              <ReviewRow label="Secondary Nameserver"  value={form.nameserver2} />
+              <ReviewRow label="Admin Email"           value={form.adminEmail} />
+              <ReviewRow label="Admin Password"        value={form.adminPassword ? '••••••••' : '(unchanged)'} />
+            </div>
+          </>}
 
           {error && (
             <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-3 py-2 rounded-lg">
