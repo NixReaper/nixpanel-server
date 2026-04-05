@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Folder, FileText, ChevronRight, Trash2, Pencil, Plus, Upload, RefreshCw, FolderPlus, Save, X } from 'lucide-react'
+import { Folder, FileText, ChevronRight, Trash2, Pencil, RefreshCw, FolderPlus, Save, X } from 'lucide-react'
 import { api } from '../api/client'
 
 interface FileEntry { name: string; type: 'file' | 'directory'; size: number; mtime: string; path: string }

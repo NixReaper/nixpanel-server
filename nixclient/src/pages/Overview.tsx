@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Database, Mail, Globe, FolderOpen, Lock, Anchor, Clock, HardDrive } from 'lucide-react'
+import { Database, Mail, Globe, Lock, Anchor, Clock } from 'lucide-react'
 import { api } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -34,7 +34,7 @@ function UsageBar({ used, limit, label }: { used: number; limit: number; label: 
   )
 }
 
-function CountCard({ icon: Icon, label, used, limit, to }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; used: number; limit: number; to: string }) {
+function CountCard({ icon: Icon, label, used, limit, to }: { icon: React.ComponentType<{ size?: number | string; className?: string }>; label: string; used: number; limit: number; to: string }) {
   return (
     <a href={to} className="bg-[#111827] border border-[#1e2d45] rounded-xl p-4 hover:border-sky-500/30 transition-colors block">
       <div className="flex items-center justify-between mb-2">

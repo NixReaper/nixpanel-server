@@ -8,7 +8,7 @@ interface Stats {
   counts: Record<string, number>
 }
 
-function Bar({ label, used, limit, icon: Icon }: { label: string; used: number; limit: number; icon: React.ComponentType<{ size?: number; className?: string }> }) {
+function Bar({ label, used, limit, icon: Icon }: { label: string; used: number; limit: number; icon: React.ComponentType<{ size?: number | string; className?: string }> }) {
   const pct = limit === 0 ? 0 : Math.min(100, Math.round((used / limit) * 100))
   const color = pct > 90 ? 'bg-red-500' : pct > 70 ? 'bg-amber-500' : 'bg-sky-500'
   return (
