@@ -13,10 +13,11 @@ async function start() {
 
     app = await buildApp()
 
-    // NixServer on port 2087
+    // Node.js listens on internal port (Nginx proxies public 2087/2083 → here)
     await app.listen({ port: config.server.nixserverPort, host: config.server.host })
-    console.log(`NixServer running on port ${config.server.nixserverPort}`)
-    console.log(`NixClient API running on port ${config.server.nixserverPort} (/api/cpanel)`)
+    console.log(`NixPanel API running on ${config.server.host}:${config.server.nixserverPort}`)
+    console.log(`NixServer admin → http://127.0.0.1:${config.server.nixserverPort}/api/`)
+    console.log(`NixClient user  → http://127.0.0.1:${config.server.nixserverPort}/api/cpanel/`)
 
   } catch (err) {
     console.error('Failed to start server:', err)

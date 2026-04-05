@@ -16,8 +16,8 @@ export const config = {
 
   server: {
     host: optional('HOST', '0.0.0.0'),
-    nixserverPort: parseInt(optional('NIXSERVER_PORT', '2087'), 10),
-    nixclientPort: parseInt(optional('NIXCLIENT_PORT', '2083'), 10),
+    nixserverPort: parseInt(optional('NIXSERVER_PORT', '4000'), 10),
+    nixclientPort: parseInt(optional('NIXCLIENT_PORT', '4001'), 10),
   },
 
   db: {

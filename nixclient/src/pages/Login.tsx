@@ -49,7 +49,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-center text-[#64748b] text-xs mt-4">NixClient v0.3.0 · Port 2083</p>
+        <p className="text-center text-[#64748b] text-xs mt-4">NixClient v0.3.1 · Port 2083</p>
       </div>
     </div>
   )
