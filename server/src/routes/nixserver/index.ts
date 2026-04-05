@@ -11,8 +11,10 @@ import systemRoutes from './system.js'
 import securityRoutes from './security.js'
 import backupRoutes from './backup.js'
 import webserverRoutes from './webserver.js'
+import setupRoutes from './setup.js'
 
 export default async function nixserverRoutes(fastify: FastifyInstance) {
+  fastify.register(setupRoutes, { prefix: '/setup' })
   fastify.register(accountRoutes, { prefix: '/accounts' })
   fastify.register(packageRoutes, { prefix: '/packages' })
   fastify.register(resellerRoutes, { prefix: '/resellers' })

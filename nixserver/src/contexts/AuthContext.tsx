@@ -11,6 +11,8 @@ interface User {
 interface AuthContextValue {
   user: User | null
   loading: boolean
+  setupComplete: boolean
+  markSetupComplete: () => void
   login: (username: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -20,6 +22,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [setupComplete, setSetupComplete] = useState(true)
 
   const fetchMe = useCallback(async () => {
     const token = localStorage.getItem('access_token')
@@ -32,6 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
       setUser(data.data)
+
+      // Only admins trigger the setup check
+      if (data.data.role === 'admin') {
+        const { data: setupData } = await api.get('/nixserver/setup/status')
+        setSetupComplete(setupData.data.setupComplete)
+      }
     } catch {
       localStorage.clear()
     } finally {
@@ -49,6 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('access_token', data.data.accessToken)
     localStorage.setItem('refresh_token', data.data.refreshToken)
     setUser(data.data.user)
+
+    // Check setup status after login
+    if (data.data.role === 'admin') {
+      try {
+        const { data: setupData } = await api.get('/nixserver/setup/status')
+        setSetupComplete(setupData.data.setupComplete)
+      } catch {
+        setSetupComplete(true) // fail open — don't block login on setup check failure
+      }
+    }
   }
 
   const logout = async () => {
@@ -56,10 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try { await api.post('/auth/logout', { refreshToken }) } catch {}
     localStorage.clear()
     setUser(null)
+    setSetupComplete(true)
   }
 
+  const markSetupComplete = () => setSetupComplete(true)
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, setupComplete, markSetupComplete, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

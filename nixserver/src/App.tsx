@@ -7,37 +7,56 @@ import Dashboard from './pages/Dashboard'
 import Accounts from './pages/Accounts'
 import CreateAccount from './pages/CreateAccount'
 import Packages from './pages/Packages'
+import Setup from './pages/Setup'
 
 // Lazy-loaded pages (built incrementally)
-const Resellers = React.lazy(() => import('./pages/Resellers'))
-const DNS = React.lazy(() => import('./pages/DNS'))
-const Email = React.lazy(() => import('./pages/Email'))
-const SSL = React.lazy(() => import('./pages/SSL'))
-const PHP = React.lazy(() => import('./pages/PHP'))
-const Services = React.lazy(() => import('./pages/Services'))
-const Backup = React.lazy(() => import('./pages/Backup'))
-const Security = React.lazy(() => import('./pages/Security'))
-const System = React.lazy(() => import('./pages/System'))
-const WebServer = React.lazy(() => import('./pages/WebServer'))
-const Settings = React.lazy(() => import('./pages/Settings'))
+const Resellers  = React.lazy(() => import('./pages/Resellers'))
+const DNS        = React.lazy(() => import('./pages/DNS'))
+const Email      = React.lazy(() => import('./pages/Email'))
+const SSL        = React.lazy(() => import('./pages/SSL'))
+const PHP        = React.lazy(() => import('./pages/PHP'))
+const Services   = React.lazy(() => import('./pages/Services'))
+const Backup     = React.lazy(() => import('./pages/Backup'))
+const Security   = React.lazy(() => import('./pages/Security'))
+const System     = React.lazy(() => import('./pages/System'))
+const WebServer  = React.lazy(() => import('./pages/WebServer'))
+const Settings   = React.lazy(() => import('./pages/Settings'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, loading, setupComplete } = useAuth()
+
   if (loading) return (
     <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
     </div>
   )
+
   if (!user) return <Navigate to="/login" replace />
+
+  // Admin must complete first-run setup before accessing the panel
+  if (user.role === 'admin' && !setupComplete) {
+    return <Navigate to="/setup" replace />
+  }
+
   return <>{children}</>
 }
 
 function AppRoutes() {
-  const { user } = useAuth()
+  const { user, setupComplete } = useAuth()
 
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+
+      {/* First-run setup — only accessible to authenticated admins who haven't completed setup */}
+      <Route path="/setup" element={
+        !user
+          ? <Navigate to="/login" replace />
+          : setupComplete
+            ? <Navigate to="/" replace />
+            : <Setup />
+      } />
+
       <Route path="/" element={
         <ProtectedRoute>
           <Layout />
@@ -81,6 +100,7 @@ function AppRoutes() {
           <React.Suspense fallback={<PageLoader />}><Settings /></React.Suspense>
         } />
       </Route>
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
