@@ -1,0 +1,22 @@
+{
+  "name": "nixpanel-server",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "server",
+    "whm",
+    "cpanel"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=whm\" \"npm run dev --workspace=cpanel\"",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:whm": "npm run dev --workspace=whm",
+    "dev:cpanel": "npm run dev --workspace=cpanel",
+    "build": "npm run build --workspace=server && npm run build --workspace=whm && npm run build --workspace=cpanel",
+    "db:migrate": "npm run db:migrate --workspace=server",
+    "db:studio": "npm run db:studio --workspace=server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
