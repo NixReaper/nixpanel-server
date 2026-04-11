@@ -577,6 +577,16 @@ cd "$INSTALL_DIR/server"
 npm run build --silent
 success "Build complete"
 
+# ── Set web-readable permissions on frontend assets ───────────────────────────
+step "Setting frontend file permissions"
+# Apache runs as www-data — ensure it can traverse parents and read dist files
+chmod 755 "$INSTALL_DIR" "$INSTALL_DIR/nixserver" "$INSTALL_DIR/nixclient"
+find "$INSTALL_DIR/nixserver/dist" -type d -exec chmod 755 {} \;
+find "$INSTALL_DIR/nixserver/dist" -type f -exec chmod 644 {} \;
+find "$INSTALL_DIR/nixclient/dist" -type d -exec chmod 755 {} \;
+find "$INSTALL_DIR/nixclient/dist" -type f -exec chmod 644 {} \;
+success "File permissions set"
+
 # ── systemd service ───────────────────────────────────────────────────────────
 step "Creating systemd service"
 cat > /etc/systemd/system/nixpanel.service <<UNIT
