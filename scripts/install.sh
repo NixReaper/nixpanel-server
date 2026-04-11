@@ -244,7 +244,7 @@ success "Directories created"
 step "Configuring Apache"
 if ! step_done "apache"; then
   # Enable required modules
-  a2enmod rewrite ssl proxy proxy_fcgi headers expires deflate 2>/dev/null || true
+  a2enmod rewrite ssl proxy proxy_http proxy_wstunnel proxy_fcgi headers expires deflate 2>/dev/null || true
 
   # Disable default vhost
   a2dissite 000-default 2>/dev/null || true
