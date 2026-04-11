@@ -13,8 +13,8 @@ async function start() {
 
     app = await buildApp()
 
-    await app.listen({ port: config.server.nixserverPort, host: config.server.host })
-    console.log(`[nixpanel] API running on ${config.server.host}:${config.server.nixserverPort}`)
+    await app.listen({ port: config.server.port, host: config.server.host })
+    console.log(`[nixpanel] API running on ${config.server.host}:${config.server.port}`)
 
     startScheduler()
 

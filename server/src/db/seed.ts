@@ -73,10 +73,10 @@ async function main() {
   // Default settings
   const settings = [
     { key: 'php_default_version', value: '8.3' },
-    { key: 'mail_server', value: 'postfix' },
-    { key: 'ftp_server', value: 'vsftpd' },
-    { key: 'webserver', value: 'nginx' },
-    { key: 'dns_server', value: 'bind9' },
+    { key: 'mail_server', value: 'exim4' },
+    { key: 'ftp_server', value: 'disabled' },
+    { key: 'webserver', value: 'apache2' },
+    { key: 'dns_server', value: 'powerdns' },
     { key: 'ssl_provider', value: 'letsencrypt' },
     { key: 'backup_enabled', value: 'true' },
     { key: 'backup_retention_days', value: '7' },

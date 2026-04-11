@@ -15,9 +15,8 @@ export const config = {
   isDev: optional('NODE_ENV', 'development') === 'development',
 
   server: {
-    host: optional('HOST', '0.0.0.0'),
-    nixserverPort: parseInt(optional('NIXSERVER_PORT', '4000'), 10),
-    nixclientPort: parseInt(optional('NIXCLIENT_PORT', '4001'), 10),
+    host: optional('HOST', '127.0.0.1'),
+    port: parseInt(optional('PORT', '4000'), 10),
   },
 
   db: {
