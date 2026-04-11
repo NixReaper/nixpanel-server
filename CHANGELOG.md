@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.6.1] — 2026-04-11
+
+### Changes
+- **`CLAUDE.md` added** — development standards file auto-read by Claude Code before every session. Documents version numbering rules, changelog format, commit message conventions, file size limits, section/page architecture patterns, API conventions, and project structure.
+
+---
+
 ## [0.6.0] — 2026-04-11
 
 ### Features
