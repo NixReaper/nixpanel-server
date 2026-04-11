@@ -462,13 +462,17 @@ export default function Layout() {
   // ── Version / upgrade state ──────────────────────────────────────────────
   type VersionInfo = { currentVersion: string; latestVersion: string | null; updateAvailable: boolean }
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null)
+  const [versionError, setVersionError] = useState(false)
   const [upgradeState, setUpgradeState] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
 
   const fetchVersion = useCallback(async () => {
+    setVersionError(false)
     try {
-      const { data } = await axios.get('/api/nixserver/system/version')
+      const { data } = await axios.get('/api/nixserver/system/version', { timeout: 10_000 })
       setVersionInfo(data.data)
-    } catch { /* non-fatal */ }
+    } catch {
+      setVersionError(true)
+    }
   }, [])
 
   useEffect(() => { fetchVersion() }, [fetchVersion])
@@ -725,6 +729,13 @@ export default function Layout() {
                   )}
                 </div>
               )}
+            </div>
+          ) : versionError ? (
+            <div className="flex items-center justify-between px-1 py-1">
+              <span className="text-[#4a5568] text-[10px]">Version unavailable</span>
+              <button onClick={fetchVersion} title="Retry" className="text-[#4a5568] hover:text-[#94a3b8] transition-colors">
+                <RefreshCcw size={10} />
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 px-1 py-1">

@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.4] — 2026-04-11
+
+### New Features
+- **Server info bar on Dashboard** — cPanel/WHM-style info strip at the top of the NixPanel home page. Shows Username, Hostname, OS, NixPanel Version, Load Averages (live from WebSocket), and Server Monitoring alert count. Alerts are colour-coded: green "All Clear" when all managed services are running; amber "N Alerts" with a count of stopped/failed services.
+
+---
+
 ## [0.4.3] — 2026-04-11
 
 ### New Features

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Users, Server, HardDrive, Activity } from 'lucide-react'
+import { Users, Server, HardDrive, Activity, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { api } from '../api/client'
+import { useAuth } from '../contexts/AuthContext'
 
 interface SystemStats {
   cpu: number
@@ -18,6 +19,17 @@ interface AccountStats {
   terminated: number
 }
 
+interface SystemInfo {
+  hostname: string
+  os: string
+}
+
+interface ServiceStatus {
+  name: string
+  status: 'running' | 'stopped' | 'failed' | 'unknown'
+  enabled: boolean
+}
+
 interface StatCard {
   label: string
   value: string | number
@@ -31,15 +43,51 @@ const formatBytes = (bytes: number) => {
   return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(bytes / 1024 / 1024).toFixed(0)} MB`
 }
 
+// ─── Server Info Bar ─────────────────────────────────────────────────────────
+
+interface InfoCellProps {
+  label: string
+  value: React.ReactNode
+}
+
+function InfoCell({ label, value }: InfoCellProps) {
+  return (
+    <div className="flex flex-col min-w-0">
+      <span className="text-[#4a5568] text-[10px] font-medium uppercase tracking-wide leading-none mb-0.5">
+        {label}
+      </span>
+      <span className="text-[#94a3b8] text-xs font-medium leading-none truncate">
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function Divider() {
+  return <div className="w-px h-8 bg-[#2a2d3e] flex-shrink-0" />
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
 export default function Dashboard() {
+  const { user } = useAuth()
   const [stats, setStats] = useState<SystemStats | null>(null)
   const [accountStats, setAccountStats] = useState<AccountStats | null>(null)
   const [cpuHistory, setCpuHistory] = useState<{ t: string; cpu: number; mem: number }[]>([])
+  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null)
+  const [version, setVersion] = useState<string | null>(null)
+  const [alertCount, setAlertCount] = useState<number | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
     api.get('/nixserver/accounts/stats').then(r => setAccountStats(r.data.data)).catch(() => {})
     api.get('/nixserver/system/stats').then(r => setStats(r.data.data)).catch(() => {})
+    api.get('/nixserver/system/info').then(r => setSystemInfo(r.data.data)).catch(() => {})
+    api.get('/nixserver/system/version').then(r => setVersion(r.data.data?.currentVersion ?? null)).catch(() => {})
+    api.get('/nixserver/services').then(r => {
+      const services: ServiceStatus[] = r.data.data ?? []
+      setAlertCount(services.filter(s => s.status !== 'running').length)
+    }).catch(() => { setAlertCount(0) })
 
     // WebSocket live stats
     const token = localStorage.getItem('access_token')
@@ -92,14 +140,44 @@ export default function Dashboard() {
     },
   ]
 
+  const loadStr = stats
+    ? `${stats.load[0].toFixed(2)}\u00a0\u00a0${stats.load[1].toFixed(2)}\u00a0\u00a0${stats.load[2].toFixed(2)}`
+    : '…'
+
+  const monitoringNode =
+    alertCount === null ? (
+      <span className="text-[#4a5568]">…</span>
+    ) : alertCount === 0 ? (
+      <span className="flex items-center gap-1 text-emerald-400">
+        <CheckCircle2 size={11} />
+        All Clear
+      </span>
+    ) : (
+      <span className="flex items-center gap-1 text-amber-400">
+        <AlertTriangle size={11} />
+        {alertCount} Alert{alertCount !== 1 ? 's' : ''}
+      </span>
+    )
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-white text-xl font-semibold">Dashboard</h1>
-        <p className="text-[#64748b] text-sm mt-0.5">Server overview and real-time metrics</p>
+
+      {/* ── cPanel-style server info bar ─────────────────────────────────── */}
+      <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl px-5 py-3.5 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <InfoCell label="Username"        value={user?.username ?? '…'} />
+        <Divider />
+        <InfoCell label="Hostname"        value={systemInfo?.hostname ?? '…'} />
+        <Divider />
+        <InfoCell label="OS"              value={systemInfo?.os ?? '…'} />
+        <Divider />
+        <InfoCell label="NixPanel Version" value={version ? `v${version}` : '…'} />
+        <Divider />
+        <InfoCell label="Load Averages"   value={loadStr} />
+        <Divider />
+        <InfoCell label="Server Monitoring" value={monitoringNode} />
       </div>
 
-      {/* Stat cards */}
+      {/* ── Stat cards ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {cards.map(card => (
           <div key={card.label} className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-4">
@@ -113,7 +191,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* CPU / Memory chart */}
+      {/* ── CPU / Memory chart ───────────────────────────────────────────── */}
       <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-4">
         <h2 className="text-white text-sm font-medium mb-4">CPU & Memory — Live</h2>
         {cpuHistory.length > 0 ? (
@@ -146,15 +224,15 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Account status breakdown */}
+      {/* ── Account status breakdown ─────────────────────────────────────── */}
       {accountStats && (
         <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl p-4">
           <h2 className="text-white text-sm font-medium mb-4">Account Status</h2>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Active', value: accountStats.active, color: 'text-emerald-400' },
-              { label: 'Suspended', value: accountStats.suspended, color: 'text-amber-400' },
-              { label: 'Terminated', value: accountStats.terminated, color: 'text-red-400' },
+              { label: 'Active',     value: accountStats.active,     color: 'text-emerald-400' },
+              { label: 'Suspended',  value: accountStats.suspended,  color: 'text-amber-400'   },
+              { label: 'Terminated', value: accountStats.terminated, color: 'text-red-400'     },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>

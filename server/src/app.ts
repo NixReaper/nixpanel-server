@@ -73,7 +73,7 @@ export async function buildApp() {
 
   fastify.get('/api/health', async () => ({
     status: 'ok',
-    version: '0.4.3',
+    version: '0.4.4',
     timestamp: new Date().toISOString(),
   }))
 
