@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.7] — 2026-04-11
+
+### Bug Fixes
+- **Login broken after v0.4.6 update** — `package-lock.json` still mapped the workspace as `@nixpanel/whm`. After renaming the package to `@nixpanel/nixserver`, npm workspace resolution failed during `npm install`, causing the frontend build to break and leaving the panel unresponsive. Fixed by regenerating `package-lock.json` with the correct package name.
+
+---
+
 ## [0.4.6] — 2026-04-11
 
 ### Changes
