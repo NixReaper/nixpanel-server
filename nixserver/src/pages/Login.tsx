@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Shield } from 'lucide-react'
+import axios from 'axios'
 
 export default function Login() {
   const { login } = useAuth()
@@ -10,6 +11,13 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [version, setVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    axios.get('/api/health', { timeout: 5_000 })
+      .then(r => setVersion(r.data.version ?? null))
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,7 +43,7 @@ export default function Login() {
             <Shield size={24} className="text-white" />
           </div>
           <h1 className="text-white text-xl font-bold">NixServer</h1>
-          <p className="text-[#64748b] text-sm mt-1">Web Host Manager</p>
+          <p className="text-[#64748b] text-sm mt-1">Admin Panel</p>
         </div>
 
         {/* Form */}
@@ -81,7 +89,7 @@ export default function Login() {
         </form>
 
         <p className="text-center text-[#64748b] text-xs mt-4">
-          NixServer v0.3.2 · Port 2087
+          NixServer{version ? ` v${version}` : ''} · Port 2087
         </p>
       </div>
     </div>
