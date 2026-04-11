@@ -6,6 +6,17 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.3] — 2026-04-11
+
+### New Features
+- **Version display in sidebar** — the sidebar footer shows the currently installed version (e.g. `v0.4.3`), fetched live from the API. A green checkmark indicates up to date; an amber alert indicates an update is available.
+- **One-click panel upgrade** — "Upgrade panel" button in the sidebar footer. When a newer version is available it highlights amber and shows the target version. Clicking requires a confirmation step before running. Calls `POST /api/nixserver/system/upgrade` which fires `scripts/update.sh` in the background (git pull → npm install → prisma migrate → build frontends + server → restart service). The panel comes back online automatically after ~60 s.
+- **Check for updates button** — small refresh icon next to the version badge re-fetches version info on demand.
+- **Backend: `GET /api/nixserver/system/version`** — returns `currentVersion` (read from `/opt/nixpanel/package.json`), `latestVersion` (fetched from GitHub raw content with a 5 s timeout), and `updateAvailable` boolean.
+- **Backend: `POST /api/nixserver/system/upgrade`** — admin-only; responds immediately then spawns `scripts/update.sh` detached so the HTTP response is flushed before the service restarts.
+
+---
+
 ## [0.4.2] — 2026-04-11
 
 ### Changes

@@ -1,9 +1,12 @@
 import type { FastifyInstance } from 'fastify'
+import { spawn } from 'child_process'
 import prisma from '../../db/client.js'
 import { requireAdmin } from '../../middleware/auth.js'
 import { getSystemStats } from '../../core/system.js'
 import { exec } from '../../core/exec.js'
 import { readFile } from 'fs/promises'
+
+const INSTALL_DIR = process.env.INSTALL_DIR ?? '/opt/nixpanel'
 
 export default async function systemRoutes(fastify: FastifyInstance) {
   // GET /api/nixserver/system/stats
@@ -120,5 +123,57 @@ export default async function systemRoutes(fastify: FastifyInstance) {
     }
 
     return reply.send({ success: true, data: { message: 'Settings updated' } })
+  })
+
+  // GET /api/nixserver/system/version
+  // Returns the installed version and checks GitHub for the latest available version.
+  fastify.get('/version', { preHandler: [requireAdmin] }, async (_request, reply) => {
+    // Read installed version from package.json
+    let currentVersion = '0.0.0'
+    try {
+      const pkg = JSON.parse(await readFile(`${INSTALL_DIR}/package.json`, 'utf8'))
+      currentVersion = pkg.version ?? '0.0.0'
+    } catch { /* running in dev or non-standard path */ }
+
+    // Check GitHub for latest version (5 s timeout, non-fatal)
+    let latestVersion: string | null = null
+    try {
+      const resp = await fetch(
+        'https://raw.githubusercontent.com/NixReaper/nixpanel-server/main/package.json',
+        { signal: AbortSignal.timeout(5_000) }
+      )
+      if (resp.ok) {
+        const json = await resp.json() as { version?: string }
+        latestVersion = json.version ?? null
+      }
+    } catch { /* offline or rate-limited */ }
+
+    return reply.send({
+      success: true,
+      data: {
+        currentVersion,
+        latestVersion,
+        updateAvailable: latestVersion !== null && latestVersion !== currentVersion,
+      },
+    })
+  })
+
+  // POST /api/nixserver/system/upgrade
+  // Fires the update script in the background and returns immediately.
+  // The service will restart ~60 s later once the build finishes.
+  fastify.post('/upgrade', { preHandler: [requireAdmin] }, async (_request, reply) => {
+    reply.send({
+      success: true,
+      data: { message: 'Upgrade started. The panel will be back online in about 60 seconds.' },
+    })
+
+    // Delay slightly to ensure the HTTP response is flushed before the service restarts
+    setTimeout(() => {
+      const child = spawn('bash', [`${INSTALL_DIR}/scripts/update.sh`], {
+        detached: true,
+        stdio: 'ignore',
+      })
+      child.unref()
+    }, 800)
   })
 }

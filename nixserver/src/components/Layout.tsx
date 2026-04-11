@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Settings, HelpCircle, Network, BookUser, UserCog,
@@ -6,8 +6,10 @@ import {
   Users, UserCheck, ArrowRightLeft, Paintbrush, Package,
   Globe, Database, Wifi, Box, Mail, HeartPulse, Lock,
   ShoppingBag, Code2, Puzzle, LogOut, Menu, X,
-  ChevronDown, ChevronRight, Search, RotateCcw
+  ChevronDown, ChevronRight, Search, RotateCcw, RefreshCcw,
+  ArrowUpCircle, CheckCircle2, AlertCircle, Loader2
 } from 'lucide-react'
+import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 
 // ─── Nav data ────────────────────────────────────────────────────────────────
@@ -456,6 +458,37 @@ export default function Layout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [search, setSearch] = useState('')
+
+  // ── Version / upgrade state ──────────────────────────────────────────────
+  type VersionInfo = { currentVersion: string; latestVersion: string | null; updateAvailable: boolean }
+  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null)
+  const [upgradeState, setUpgradeState] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
+
+  const fetchVersion = useCallback(async () => {
+    try {
+      const { data } = await axios.get('/api/nixserver/system/version')
+      setVersionInfo(data.data)
+    } catch { /* non-fatal */ }
+  }, [])
+
+  useEffect(() => { fetchVersion() }, [fetchVersion])
+
+  const handleUpgrade = async () => {
+    if (upgradeState === 'confirm') {
+      setUpgradeState('running')
+      try {
+        await axios.post('/api/nixserver/system/upgrade')
+        setUpgradeState('done')
+      } catch {
+        setUpgradeState('error')
+      }
+    } else {
+      setUpgradeState('confirm')
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   const [openCats, setOpenCats] = useState<Set<string>>(() => {
     // Auto-open the category that contains the active route on first render
     const active = NAV.find(cat =>
@@ -617,6 +650,89 @@ export default function Layout() {
             <p className="text-center text-[#4a5568] text-xs py-6">No results</p>
           )}
         </nav>
+
+        {/* Version + upgrade */}
+        <div className="border-t border-[#2a2d3e] px-3 pt-2.5 pb-1 flex-shrink-0">
+          {versionInfo ? (
+            <div className="space-y-1.5">
+              {/* Version row */}
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  {versionInfo.updateAvailable ? (
+                    <AlertCircle size={11} className="text-amber-400 flex-shrink-0" />
+                  ) : (
+                    <CheckCircle2 size={11} className="text-emerald-500 flex-shrink-0" />
+                  )}
+                  <span className="text-[#64748b] text-[10px]">
+                    v{versionInfo.currentVersion}
+                  </span>
+                  {versionInfo.updateAvailable && versionInfo.latestVersion && (
+                    <span className="text-amber-400 text-[10px]">
+                      → v{versionInfo.latestVersion}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={fetchVersion}
+                  title="Check for updates"
+                  className="text-[#4a5568] hover:text-[#94a3b8] transition-colors"
+                >
+                  <RefreshCcw size={10} />
+                </button>
+              </div>
+
+              {/* Upgrade button */}
+              {upgradeState === 'done' ? (
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-emerald-600/10 text-emerald-400 text-[10px]">
+                  <CheckCircle2 size={11} />
+                  <span>Upgrade started — panel restarting…</span>
+                </div>
+              ) : upgradeState === 'error' ? (
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-red-600/10 text-red-400 text-[10px]">
+                  <AlertCircle size={11} />
+                  <span>Upgrade failed — check logs</span>
+                </div>
+              ) : (
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={handleUpgrade}
+                    disabled={upgradeState === 'running'}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-medium transition-colors ${
+                      upgradeState === 'confirm'
+                        ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'
+                        : versionInfo.updateAvailable
+                          ? 'bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30'
+                          : 'bg-[#1e2130] text-[#64748b] hover:text-[#94a3b8]'
+                    }`}
+                  >
+                    {upgradeState === 'running' ? (
+                      <><Loader2 size={10} className="animate-spin" /><span>Upgrading…</span></>
+                    ) : upgradeState === 'confirm' ? (
+                      <><ArrowUpCircle size={10} /><span>Confirm upgrade</span></>
+                    ) : versionInfo.updateAvailable ? (
+                      <><ArrowUpCircle size={10} /><span>Upgrade available</span></>
+                    ) : (
+                      <><ArrowUpCircle size={10} /><span>Upgrade panel</span></>
+                    )}
+                  </button>
+                  {upgradeState === 'confirm' && (
+                    <button
+                      onClick={() => setUpgradeState('idle')}
+                      className="px-2 py-1.5 rounded-md bg-[#1e2130] text-[#64748b] hover:text-[#94a3b8] text-[10px] transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-1 py-1">
+              <Loader2 size={10} className="animate-spin text-[#4a5568]" />
+              <span className="text-[#4a5568] text-[10px]">Checking version…</span>
+            </div>
+          )}
+        </div>
 
         {/* User + logout */}
         <div className="border-t border-[#2a2d3e] p-3 flex-shrink-0">
