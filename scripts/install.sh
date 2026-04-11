@@ -547,7 +547,8 @@ success ".env written"
 # ── npm install ───────────────────────────────────────────────────────────────
 step "Installing Node.js dependencies"
 cd "$INSTALL_DIR"
-npm install --silent
+rm -rf node_modules package-lock.json
+npm install
 success "npm dependencies installed"
 
 # ── Prisma generate + db push ─────────────────────────────────────────────────
@@ -571,10 +572,10 @@ success "Admin account and default packages seeded"
 # ── Build ─────────────────────────────────────────────────────────────────────
 step "Building frontends and server"
 cd "$INSTALL_DIR"
-npm run build --workspace=nixserver --silent
-npm run build --workspace=nixclient --silent
+npm run build --workspace=nixserver
+npm run build --workspace=nixclient
 cd "$INSTALL_DIR/server"
-npm run build --silent
+npm run build
 success "Build complete"
 
 # ── Set web-readable permissions on frontend assets ───────────────────────────

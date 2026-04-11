@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.5.1] — 2026-04-11
+
+### Bug Fixes
+- **`install.sh` build steps used `--silent`** — errors during `npm install` and frontend/server builds were suppressed, making failures invisible. Removed `--silent` from all build commands. Also added `rm -rf node_modules package-lock.json` before `npm install` to ensure a clean platform-correct install, consistent with `update.sh`.
+
+---
+
 ## [0.5.0] — 2026-04-11
 
 ### Bug Fixes
