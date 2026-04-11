@@ -18,7 +18,7 @@ type NavItem = { label: string; to: string }
 type NavCategory = {
   id: string
   label: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
+  icon: React.ComponentType<{ size?: number | string; className?: string }>
   items: NavItem[]
 }
 
