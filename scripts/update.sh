@@ -24,7 +24,7 @@ success "Dependencies ready"
 
 step "Running migrations"
 cd "$INSTALL_DIR/server"
-npx prisma generate --silent
+npx prisma generate
 npx prisma migrate deploy
 success "Migrations applied"
 
