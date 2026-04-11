@@ -32,6 +32,12 @@ step "Rebuilding frontends"
 cd "$INSTALL_DIR"
 npm run build --workspace=nixserver --silent
 npm run build --workspace=nixclient --silent
+# Ensure Apache (www-data) can read the rebuilt assets
+chmod 755 "$INSTALL_DIR/nixserver" "$INSTALL_DIR/nixclient"
+find "$INSTALL_DIR/nixserver/dist" -type d -exec chmod 755 {} \;
+find "$INSTALL_DIR/nixserver/dist" -type f -exec chmod 644 {} \;
+find "$INSTALL_DIR/nixclient/dist" -type d -exec chmod 755 {} \;
+find "$INSTALL_DIR/nixclient/dist" -type f -exec chmod 644 {} \;
 success "Frontends rebuilt"
 
 step "Rebuilding server"
