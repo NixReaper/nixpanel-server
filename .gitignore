@@ -6,15 +6,20 @@ dist/
 .DS_Store
 Thumbs.db
 
+# package-lock.json is platform-specific (rollup native binaries differ between
+# Windows dev machines and Linux servers). Never commit it — the server generates
+# its own on each install.
+package-lock.json
+
 # Prisma
 server/prisma/dev.db
 server/prisma/dev.db-journal
 
 # Build outputs
 server/dist/
-whm/dist/
-cpanel/dist/
+nixserver/dist/
+nixclient/dist/
 
 # Vite
-whm/.vite/
-cpanel/.vite/
+nixserver/.vite/
+nixclient/.vite/

@@ -6,6 +6,16 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.5.0] — 2026-04-11
+
+### Bug Fixes
+- **Rollup native binary missing on Linux** — `package-lock.json` was generated on Windows and committed to git. It included the Windows rollup binary (`@rollup/rollup-win32-x64-msvc`) but not the Linux one (`@rollup/rollup-linux-x64-gnu`), causing the frontend build to fail on the server with `Cannot find module @rollup/rollup-linux-x64-gnu`.
+- **`package-lock.json` added to `.gitignore`** — lock files are platform-specific and must never be committed. The server now generates its own fresh lock file on every update.
+- **`update.sh` now does a clean install** — deletes `node_modules/` and `package-lock.json` before `npm install` on every update run to guarantee platform-correct native binaries. Also drops `--silent` from build commands so errors are visible.
+- **`.gitignore` corrected** — removed stale `whm/` and `cpanel/` dist paths, added correct `nixserver/` and `nixclient/` paths.
+
+---
+
 ## [0.4.9] — 2026-04-11
 
 ### Bug Fixes

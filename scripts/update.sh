@@ -14,14 +14,19 @@ INSTALL_DIR="${1:-/opt/nixpanel}"
 [[ -d "$INSTALL_DIR/.git" ]] || error "NixPanel not found at $INSTALL_DIR"
 
 step "Pulling latest code"
-# Discard any local changes to generated/lock files so git pull never conflicts
-git -C "$INSTALL_DIR" checkout -- package-lock.json 2>/dev/null || true
+# package-lock.json is not tracked (platform-specific), but discard any other
+# locally modified tracked files that could block a fast-forward pull
+git -C "$INSTALL_DIR" checkout -- . 2>/dev/null || true
 git -C "$INSTALL_DIR" pull --ff-only
 success "Code updated"
 
 step "Installing dependencies"
 cd "$INSTALL_DIR"
-npm install --workspaces --include-workspace-root --silent
+# Delete node_modules and any stale lock file so npm regenerates them fresh
+# for this platform (avoids the rollup native binary mismatch between
+# Windows dev machines and Linux servers)
+rm -rf node_modules package-lock.json
+npm install --workspaces --include-workspace-root
 success "Dependencies ready"
 
 step "Running migrations"
@@ -32,8 +37,8 @@ success "Migrations applied"
 
 step "Rebuilding frontends"
 cd "$INSTALL_DIR"
-npm run build --workspace=nixserver --silent
-npm run build --workspace=nixclient --silent
+npm run build --workspace=nixserver
+npm run build --workspace=nixclient
 # Ensure Apache (www-data) can read the rebuilt assets
 chmod 755 "$INSTALL_DIR/nixserver" "$INSTALL_DIR/nixclient"
 find "$INSTALL_DIR/nixserver/dist" -type d -exec chmod 755 {} \;
@@ -44,7 +49,7 @@ success "Frontends rebuilt"
 
 step "Rebuilding server"
 cd "$INSTALL_DIR/server"
-npm run build --silent 2>/dev/null || npx tsc 2>/dev/null || true
+npm run build 2>/dev/null || npx tsc 2>/dev/null || true
 success "Server rebuilt"
 
 step "Restarting service"
