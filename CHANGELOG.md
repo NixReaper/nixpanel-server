@@ -6,6 +6,24 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.6.0] — 2026-04-11
+
+### Features
+- **Basic NixServer Setup page** — full WHM-equivalent settings page at `/server-configuration/basic-setup` with two tabs (Contact Information, Basic Config) and a Nameservers section. Stores all values in the existing key-value `settings` table. Fields: CONTACTEMAIL, EMAILFROMNAME, EMAILREPLYTO, CONTACTPAGER, CONTACTPUSHBULLET, CONTACTSLACK, CONTACTPOSTURL, ICQ fields, ADDR, ADDR6, ETHDEV (dropdown populated from `/proc/net` interfaces), HOMEDIR, HOMEMATCH, SCRIPTALIAS, TTL, NSTTL, LOGSTYLE, NS1–NS4.
+- **Server Configuration section page** — new section index at `/server-configuration` showing all 13 tools as a card grid. Implemented tools link through; unimplemented tools display a "Coming Soon" badge. Each tool has its own dedicated file under `pages/server-configuration/`.
+- **`GET /api/nixserver/system/network-interfaces`** — new endpoint that reads `/sys/class/net` and returns all non-loopback interfaces, used to populate the Ethernet Device dropdown.
+
+### Refactors
+- **File size limit enforced** — all source files split to keep each under ~150–300 lines so the codebase remains readable without token overflow:
+  - `Layout.tsx` (801 lines) → `navData.ts` + `Sidebar.tsx` + thin `Layout.tsx`
+  - `Settings.tsx` (578 lines) → `settings/FormControls.tsx`, `ContactTab.tsx`, `BasicTab.tsx`, `NameserversSection.tsx` + thin `Settings.tsx`
+  - `accounts.ts` (671 lines) → `accounts/index.ts`, `list.ts`, `create.ts`, `modify.ts`, `status.ts`
+- **`NavCategory` gains optional `to` field** — when set, a small link icon appears next to the category header in the sidebar, navigating to the section index page.
+- **Shared components added** — `SectionCard.tsx` (reusable card for section index pages) and `ComingSoon.tsx` (placeholder for unimplemented tools).
+- **`/settings` redirected** to `/server-configuration/basic-setup` for backwards compatibility.
+
+---
+
 ## [0.5.1] — 2026-04-11
 
 ### Bug Fixes
