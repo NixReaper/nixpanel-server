@@ -220,7 +220,7 @@ export default function Setup() {
         </div>
 
         <p className="text-center text-[#64748b] text-xs mt-4">
-          NixServer v0.3.1 · You can revisit these settings anytime under Settings
+          NixServer v0.3.2 · You can revisit these settings anytime under Settings
         </p>
       </div>
     </div>

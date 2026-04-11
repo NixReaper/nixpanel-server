@@ -1,6 +1,6 @@
 {
   "name": "@nixpanel/server",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
@@ -24,6 +24,7 @@
     "@fastify/websocket": "^10.0.1",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
+    "mysql2": "^3.11.5",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
     "node-cron": "^3.0.3",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.9.0",
+    "@types/node-cron": "^3.0.11",
     "prisma": "^5.22.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"

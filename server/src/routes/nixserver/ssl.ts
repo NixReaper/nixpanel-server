@@ -1,11 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import path from 'path'
 import prisma from '../../db/client.js'
 import { requireAdminOrReseller } from '../../middleware/auth.js'
 import { exec } from '../../core/exec.js'
-import { enableVhost } from '../../core/nginx.js'
-import { config } from '../../config.js'
+import { enableVhost } from '../../core/apache.js'
+import { getCertPaths } from '../../core/ssl.js'
 
 export default async function sslRoutes(fastify: FastifyInstance) {
   const preHandler = [requireAdminOrReseller]
@@ -47,23 +46,19 @@ export default async function sslRoutes(fastify: FastifyInstance) {
     if (includeWww) domains.push(`www.${domain}`)
 
     const certbotArgs = [
-      'certonly', '--webroot',
-      '-w', config.paths.certbotWebroot,
+      'certonly', '--apache',
       '--non-interactive',
       '--agree-tos',
       '--email', account.email,
       ...domains.flatMap(d => ['-d', d]),
     ]
 
-    const result = await exec('certbot', certbotArgs)
+    const result = await exec('certbot', certbotArgs, { timeout: 120_000 })
     if (result.exitCode !== 0) {
       return reply.code(500).send({ success: false, error: `certbot failed: ${result.stderr}` })
     }
 
-    const certDir = `/etc/letsencrypt/live/${domain}`
-    const certPath = `${certDir}/fullchain.pem`
-    const keyPath = `${certDir}/privkey.pem`
-    const chainPath = `${certDir}/chain.pem`
+    const { certPath, keyPath, chainPath } = getCertPaths(domain)
 
     const issuedAt = new Date()
     const expiresAt = new Date()
@@ -82,7 +77,7 @@ export default async function sslRoutes(fastify: FastifyInstance) {
       })
     }
 
-    // Update nginx vhost with SSL
+    // Regenerate Apache vhost with SSL enabled
     try {
       await enableVhost({
         domain,
@@ -91,10 +86,9 @@ export default async function sslRoutes(fastify: FastifyInstance) {
         sslEnabled: true,
         certPath,
         keyPath,
-        chainPath,
       })
     } catch (e) {
-      console.warn(`Nginx SSL update failed for ${domain}:`, e)
+      console.warn(`Apache SSL vhost update failed for ${domain}:`, e)
     }
 
     return reply.send({ success: true, data: cert })

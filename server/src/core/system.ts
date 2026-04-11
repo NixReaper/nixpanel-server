@@ -126,7 +126,13 @@ export async function getServiceStatus(name: string): Promise<ServiceStatus> {
 }
 
 export const MANAGED_SERVICES = [
-  'nginx', 'apache2', 'mysql', 'mariadb',
-  'postfix', 'dovecot', 'vsftpd', 'bind9',
-  'fail2ban', 'ufw', 'cron', 'ssh',
+  'apache2',
+  'php8.2-fpm',
+  'php8.3-fpm',
+  'exim4',
+  'dovecot',
+  'pdns',
+  'mariadb',
+  'fail2ban',
+  'ssh',
 ]

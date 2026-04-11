@@ -188,14 +188,14 @@ export default async function authRoutes(fastify: FastifyInstance) {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
 
-    const createData: Parameters<typeof prisma.refreshToken.create>[0]['data'] = {
+    const createData = {
       token: newRefresh,
       role: payload.role,
       expiresAt,
+      adminId: stored.adminId ?? undefined,
+      resellerId: stored.resellerId ?? undefined,
+      accountId: stored.accountId ?? undefined,
     }
-    if (stored.adminId) createData.adminId = stored.adminId
-    if (stored.resellerId) createData.resellerId = stored.resellerId
-    if (stored.accountId) createData.accountId = stored.accountId
 
     await prisma.refreshToken.create({ data: createData })
 

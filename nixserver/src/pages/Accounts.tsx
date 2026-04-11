@@ -1,198 +1,166 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, Search, MoreVertical, UserX, UserCheck, Trash2, RefreshCw } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  List, Globe, GitBranch, UserX, HardDrive, BarChart2,
+  Network, Plus, Mail, KeyRound, Gauge, UserCheck, FlaskConical,
+  Terminal, Edit, Lock, FileQuestion, FileText, ArrowLeftRight,
+  RotateCcw, Trash2, TrendingDown, ArrowUpDown, Code2, Copy, Layers
+} from 'lucide-react'
 import { api } from '../api/client'
 
-interface Account {
-  id: number
-  username: string
-  domain: string
-  email: string
-  status: string
-  diskUsedMb: number
-  bandwidthUsedMb: number
-  ipAddress: string | null
-  createdAt: string
-  package?: { name: string; diskMb: number }
-}
-
-interface PageData {
-  items: Account[]
+interface Stats {
   total: number
-  page: number
-  totalPages: number
+  active: number
+  suspended: number
+  terminated: number
 }
 
-const statusColor: Record<string, string> = {
-  active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  suspended: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  terminated: 'bg-red-500/10 text-red-400 border-red-500/20',
+interface FunctionCard {
+  icon: React.ComponentType<{ size?: number | string; className?: string }>
+  label: string
+  description: string
+  path: string
+  soon?: boolean
+}
+
+const accountInfo: FunctionCard[] = [
+  { icon: List,        label: 'List Accounts',             description: 'View and manage all hosting accounts',               path: '/accounts/list' },
+  { icon: Globe,       label: 'List Parked Domains',       description: 'View all parked domains across accounts',            path: '/accounts/parked-domains' },
+  { icon: GitBranch,   label: 'List Subdomains',           description: 'View all subdomains across accounts',                path: '/accounts/subdomains' },
+  { icon: UserX,       label: 'List Suspended Accounts',   description: 'View and manage suspended accounts',                 path: '/accounts/suspended' },
+  { icon: HardDrive,   label: 'Show Accounts Over Quota',  description: 'Accounts that have exceeded their disk quota',       path: '/accounts/over-quota' },
+  { icon: BarChart2,   label: 'View Bandwidth Usage',      description: 'Bandwidth consumption sorted by usage',              path: '/accounts/bandwidth' },
+]
+
+const accountFunctions: FunctionCard[] = [
+  { icon: Network,       label: 'Change Site\'s IP Address',   description: 'Assign a different IP to an account',                         path: '/accounts/change-ip' },
+  { icon: Plus,          label: 'Create a New Account',        description: 'Create a new hosting account',                                 path: '/accounts/create' },
+  { icon: Mail,          label: 'Email All Users',             description: 'Send a bulk email to all account holders',                     path: '/accounts/email-users',      soon: true },
+  { icon: KeyRound,      label: 'Force Password Change',       description: 'Force users to change password on next login',                 path: '/accounts/force-password',    soon: true },
+  { icon: Gauge,         label: 'Limit Bandwidth Usage',       description: 'Set per-account bandwidth caps independent of package',        path: '/accounts/limit-bandwidth',   soon: true },
+  { icon: UserCheck,     label: 'Manage Account Suspension',   description: 'Suspend or unsuspend a hosting account',                      path: '/accounts/suspension' },
+  { icon: FlaskConical,  label: 'Manage Demo Mode',            description: 'Put accounts into read-only demo mode',                       path: '/accounts/demo-mode',         soon: true },
+  { icon: Terminal,      label: 'Manage Shell Access',         description: 'Grant or revoke SSH shell access',                             path: '/accounts/shell-access' },
+  { icon: Edit,          label: 'Modify an Account',           description: 'Edit account email, notes, or package',                       path: '/accounts/modify' },
+  { icon: Lock,          label: 'Password Modification',       description: 'Change the password for a hosting account',                   path: '/accounts/password' },
+  { icon: FileQuestion,  label: 'Quota Modification',          description: 'Adjust disk and bandwidth quotas',                            path: '/accounts/quota' },
+  { icon: FileText,      label: 'Apache Log Viewer',           description: 'View Apache access and error logs per account',              path: '/accounts/apache-logs' },
+  { icon: ArrowLeftRight,label: 'Rearrange an Account',        description: 'Move an account between resellers',                           path: '/accounts/rearrange',         soon: true },
+  { icon: RotateCcw,     label: 'Reset Account Bandwidth',     description: 'Reset bandwidth counters for accounts',                       path: '/accounts/reset-bandwidth' },
+  { icon: Trash2,        label: 'Terminate Accounts',          description: 'Permanently terminate a hosting account',                     path: '/accounts/terminate' },
+  { icon: TrendingDown,  label: 'Unsuspend Bandwidth Exceeders',description: 'Unsuspend accounts suspended for bandwidth',                 path: '/accounts/unsuspend-bandwidth' },
+  { icon: ArrowUpDown,   label: 'Upgrade / Downgrade an Account',description: 'Change the hosting package for an account',                path: '/accounts/upgrade' },
+  { icon: Code2,         label: 'Web Template Editor',         description: 'Edit default HTML templates for new accounts',                path: '/accounts/web-template',      soon: true },
+]
+
+const multiAccountFunctions: FunctionCard[] = [
+  { icon: Copy,    label: 'Change Multiple Sites\' IP Addresses', description: 'Batch-change IP addresses across multiple accounts',        path: '/accounts/bulk-ip',     soon: true },
+  { icon: Layers,  label: 'Modify / Upgrade Multiple Accounts',   description: 'Apply changes to multiple accounts simultaneously',         path: '/accounts/bulk-modify', soon: true },
+]
+
+interface CategoryProps {
+  title: string
+  color: string
+  headerBg: string
+  cards: FunctionCard[]
+}
+
+function Category({ title, color, headerBg, cards }: CategoryProps) {
+  const navigate = useNavigate()
+  return (
+    <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl overflow-hidden">
+      <div className={`px-5 py-3 ${headerBg} border-b border-[#2a2d3e]`}>
+        <h2 className={`text-sm font-semibold ${color}`}>{title}</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-[#2a2d3e]">
+        {cards.map(card => {
+          const Icon = card.icon
+          return (
+            <button
+              key={card.path}
+              onClick={() => navigate(card.path)}
+              className="relative bg-[#1a1d27] hover:bg-[#1e2130] transition-colors p-4 text-left flex items-start gap-3 group"
+            >
+              {card.soon && (
+                <span className="absolute top-2 right-2 text-[10px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/25 px-1.5 py-0.5 rounded-full">
+                  Soon
+                </span>
+              )}
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                card.soon
+                  ? 'bg-orange-500/10'
+                  : 'bg-indigo-600/15 group-hover:bg-indigo-600/25'
+              } transition-colors`}>
+                <Icon size={16} className={card.soon ? 'text-orange-400' : 'text-indigo-400'} />
+              </div>
+              <div className="min-w-0 pr-6">
+                <p className="text-white text-sm font-medium leading-tight">{card.label}</p>
+                <p className="text-[#64748b] text-xs mt-0.5 leading-snug">{card.description}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export default function Accounts() {
-  const [data, setData] = useState<PageData | null>(null)
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [actionMenu, setActionMenu] = useState<number | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
 
-  const fetch = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams({ page: String(page), limit: '25' })
-      if (search) params.set('search', search)
-      if (status) params.set('status', status)
-      const r = await api.get(`/nixserver/accounts?${params}`)
-      setData(r.data.data)
-    } finally {
-      setLoading(false)
-    }
-  }, [page, search, status])
-
-  useEffect(() => { fetch() }, [fetch])
-
-  const action = async (id: number, act: 'suspend' | 'unsuspend' | 'terminate') => {
-    setActionMenu(null)
-    if (act === 'terminate' && !confirm('Terminate this account? This cannot be undone.')) return
-    try {
-      if (act === 'suspend') await api.post(`/nixserver/accounts/${id}/suspend`)
-      else if (act === 'unsuspend') await api.post(`/nixserver/accounts/${id}/unsuspend`)
-      else await api.delete(`/nixserver/accounts/${id}`)
-      fetch()
-    } catch (e: unknown) {
-      alert((e as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Action failed')
-    }
-  }
+  useEffect(() => {
+    api.get('/nixserver/accounts/stats')
+      .then(r => setStats(r.data.data))
+      .catch(() => {})
+  }, [])
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-white text-xl font-semibold">Accounts</h1>
-          <p className="text-[#64748b] text-sm">{data?.total ?? 0} total</p>
-        </div>
-        <Link
-          to="/accounts/create"
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-3 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={16} /> Create Account
-        </Link>
+    <div className="space-y-5">
+      {/* Header */}
+      <div>
+        <h1 className="text-white text-xl font-semibold">Account Functions</h1>
+        <p className="text-[#64748b] text-sm">Manage hosting accounts, domains, and usage.</p>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748b]" />
-          <input
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
-            placeholder="Search username, domain, email..."
-            className="w-full bg-[#1a1d27] border border-[#2a2d3e] text-white text-sm rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-        <select
-          value={status}
-          onChange={e => { setStatus(e.target.value); setPage(1) }}
-          className="bg-[#1a1d27] border border-[#2a2d3e] text-[#94a3b8] text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500"
-        >
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="terminated">Terminated</option>
-        </select>
-        <button onClick={fetch} className="p-2 text-[#64748b] hover:text-white border border-[#2a2d3e] rounded-lg transition-colors">
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#2a2d3e]">
-              {['Username', 'Domain', 'Package', 'Status', 'IP', 'Created', ''].map(h => (
-                <th key={h} className="text-left text-[#64748b] font-medium px-4 py-3 text-xs">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {loading && !data && (
-              <tr><td colSpan={7} className="text-center text-[#64748b] py-8">Loading...</td></tr>
-            )}
-            {data?.items.map(acc => (
-              <tr key={acc.id} className="border-b border-[#2a2d3e] last:border-0 hover:bg-[#1e2130] transition-colors">
-                <td className="px-4 py-3">
-                  <Link to={`/accounts/${acc.id}`} className="text-indigo-400 hover:text-indigo-300 font-medium">
-                    {acc.username}
-                  </Link>
-                  <p className="text-[#64748b] text-xs">{acc.email}</p>
-                </td>
-                <td className="px-4 py-3 text-[#94a3b8]">{acc.domain}</td>
-                <td className="px-4 py-3 text-[#94a3b8]">{acc.package?.name ?? '—'}</td>
-                <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full border ${statusColor[acc.status] ?? ''}`}>
-                    {acc.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-[#64748b] font-mono text-xs">{acc.ipAddress ?? '—'}</td>
-                <td className="px-4 py-3 text-[#64748b] text-xs">{new Date(acc.createdAt).toLocaleDateString()}</td>
-                <td className="px-4 py-3 relative">
-                  <button
-                    onClick={() => setActionMenu(actionMenu === acc.id ? null : acc.id)}
-                    className="p-1 text-[#64748b] hover:text-white rounded transition-colors"
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                  {actionMenu === acc.id && (
-                    <div className="absolute right-4 top-8 z-10 bg-[#1e2130] border border-[#2a2d3e] rounded-lg shadow-lg py-1 w-36">
-                      {acc.status === 'active' ? (
-                        <button onClick={() => action(acc.id, 'suspend')} className="flex items-center gap-2 w-full px-3 py-2 text-amber-400 hover:bg-[#2a2d3e] text-xs">
-                          <UserX size={14} /> Suspend
-                        </button>
-                      ) : acc.status === 'suspended' ? (
-                        <button onClick={() => action(acc.id, 'unsuspend')} className="flex items-center gap-2 w-full px-3 py-2 text-emerald-400 hover:bg-[#2a2d3e] text-xs">
-                          <UserCheck size={14} /> Unsuspend
-                        </button>
-                      ) : null}
-                      <button onClick={() => action(acc.id, 'terminate')} className="flex items-center gap-2 w-full px-3 py-2 text-red-400 hover:bg-[#2a2d3e] text-xs">
-                        <Trash2 size={14} /> Terminate
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {data?.items.length === 0 && (
-              <tr><td colSpan={7} className="text-center text-[#64748b] py-8">No accounts found</td></tr>
-            )}
-          </tbody>
-        </table>
-
-        {/* Pagination */}
-        {data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2d3e]">
-            <span className="text-[#64748b] text-xs">
-              Page {data.page} of {data.totalPages} ({data.total} total)
-            </span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage(p => p - 1)}
-                disabled={page === 1}
-                className="px-3 py-1 text-xs bg-[#1e2130] border border-[#2a2d3e] rounded text-[#94a3b8] disabled:opacity-40 hover:border-indigo-500 transition-colors"
-              >
-                Prev
-              </button>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={page >= data.totalPages}
-                className="px-3 py-1 text-xs bg-[#1e2130] border border-[#2a2d3e] rounded text-[#94a3b8] disabled:opacity-40 hover:border-indigo-500 transition-colors"
-              >
-                Next
-              </button>
-            </div>
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Accounts', value: stats?.total ?? '—', color: 'text-white' },
+          { label: 'Active',         value: stats?.active ?? '—', color: 'text-emerald-400' },
+          { label: 'Suspended',      value: stats?.suspended ?? '—', color: 'text-amber-400' },
+          { label: 'Terminated',     value: stats?.terminated ?? '—', color: 'text-red-400' },
+        ].map(s => (
+          <div key={s.label} className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl px-4 py-3">
+            <p className="text-[#64748b] text-xs mb-1">{s.label}</p>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
           </div>
-        )}
+        ))}
+      </div>
+
+      {/* Categories */}
+      <Category
+        title="Account Information"
+        color="text-indigo-400"
+        headerBg="bg-indigo-600/10"
+        cards={accountInfo}
+      />
+      <Category
+        title="Account Functions"
+        color="text-violet-400"
+        headerBg="bg-violet-600/10"
+        cards={accountFunctions}
+      />
+      <Category
+        title="Multi Account Functions"
+        color="text-emerald-400"
+        headerBg="bg-emerald-600/10"
+        cards={multiAccountFunctions}
+      />
+
+      {/* Legend */}
+      <div className="flex items-center gap-2 text-xs text-[#64748b]">
+        <span className="bg-orange-500/15 text-orange-400 border border-orange-500/25 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">Soon</span>
+        <span>Feature not yet implemented</span>
       </div>
     </div>
   )

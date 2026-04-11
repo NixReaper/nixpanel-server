@@ -3,7 +3,7 @@ import { z } from 'zod'
 import prisma from '../../db/client.js'
 import { requireAuth } from '../../middleware/auth.js'
 import { validateDomain, exec } from '../../core/exec.js'
-import { enableVhost } from '../../core/nginx.js'
+import { enableVhost, disableVhost } from '../../core/apache.js'
 
 export default async function domainRoutes(fastify: FastifyInstance) {
   const preHandler = [requireAuth]
@@ -48,7 +48,7 @@ export default async function domainRoutes(fastify: FastifyInstance) {
     await exec('mkdir', ['-p', docRoot])
     await exec('chown', [`${account.username}:${account.username}`, docRoot])
 
-    // Create nginx vhost for subdomain
+    // Create Apache vhost for subdomain
     try {
       await enableVhost({ domain: fqdn, username: account.username, documentRoot: docRoot })
     } catch (e) {
@@ -70,7 +70,7 @@ export default async function domainRoutes(fastify: FastifyInstance) {
     })
     if (!subdomain) return reply.code(404).send({ success: false, error: 'Subdomain not found' })
 
-    const { disableVhost } = await import('../../core/nginx.js')
+    // disableVhost already imported at top
     try { await disableVhost(subdomain.fqdn) } catch {}
 
     await prisma.subdomain.delete({ where: { id: subdomain.id } })
@@ -131,7 +131,7 @@ export default async function domainRoutes(fastify: FastifyInstance) {
     })
     if (!addon) return reply.code(404).send({ success: false, error: 'Addon domain not found' })
 
-    const { disableVhost } = await import('../../core/nginx.js')
+    // disableVhost already imported at top
     try { await disableVhost(addon.domain) } catch {}
 
     await prisma.addonDomain.delete({ where: { id: addon.id } })
@@ -161,7 +161,7 @@ export default async function domainRoutes(fastify: FastifyInstance) {
     const existing = await prisma.parkedDomain.findUnique({ where: { domain: body.data.domain } })
     if (existing) return reply.code(409).send({ success: false, error: 'Parked domain already exists' })
 
-    // Parked domains point to main public_html
+    // Parked domains point to main public_html (Apache vhost with alias)
     try {
       await enableVhost({
         domain: body.data.domain,
@@ -188,7 +188,7 @@ export default async function domainRoutes(fastify: FastifyInstance) {
     })
     if (!parked) return reply.code(404).send({ success: false, error: 'Parked domain not found' })
 
-    const { disableVhost } = await import('../../core/nginx.js')
+    // disableVhost already imported at top
     try { await disableVhost(parked.domain) } catch {}
 
     await prisma.parkedDomain.delete({ where: { id: parked.id } })

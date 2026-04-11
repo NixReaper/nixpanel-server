@@ -121,7 +121,7 @@ async function writeCrontab(username: string, accountId: number): Promise<void> 
     `# NixPanel crontab for ${username}`,
     `# DO NOT EDIT — managed by NixPanel`,
     '',
-    ...jobs.map(j => `${j.schedule} ${j.command}${j.comment ? ` # ${j.comment}` : ''}`),
+    ...jobs.map((j: { schedule: string; command: string; comment: string | null }) => `${j.schedule} ${j.command}${j.comment ? ` # ${j.comment}` : ''}`),
     '',
   ]
 

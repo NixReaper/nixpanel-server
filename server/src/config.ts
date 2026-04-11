@@ -39,12 +39,18 @@ export const config = {
 
   paths: {
     homeDir: optional('HOME_DIR', '/home'),
-    nginxSites: optional('NGINX_SITES_DIR', '/etc/nginx/sites-available'),
-    nginxEnabled: optional('NGINX_ENABLED_DIR', '/etc/nginx/sites-enabled'),
     apacheSites: optional('APACHE_SITES_DIR', '/etc/apache2/sites-available'),
     apacheEnabled: optional('APACHE_ENABLED_DIR', '/etc/apache2/sites-enabled'),
-    bindZones: optional('BIND_ZONES_DIR', '/etc/bind/zones'),
+    phpFpmPool82: optional('PHP_FPM_POOL_82', '/etc/php/8.2/fpm/pool.d'),
+    phpFpmPool83: optional('PHP_FPM_POOL_83', '/etc/php/8.3/fpm/pool.d'),
+    pdnsZones: optional('PDNS_ZONES_DIR', '/etc/pdns/zones'),
+    pdnsBindBackend: optional('PDNS_BIND_BACKEND', '/etc/pdns/bindbackend.conf'),
+    eximVirtualDomains: optional('EXIM_VIRTUAL_DOMAINS', '/etc/exim4/virtual_domains'),
+    eximVirtualMailboxes: optional('EXIM_VIRTUAL_MAILBOXES', '/etc/exim4/virtual_mailboxes'),
+    eximVirtualAliases: optional('EXIM_VIRTUAL_ALIASES', '/etc/exim4/virtual_aliases'),
+    dovecotPasswd: optional('DOVECOT_PASSWD', '/etc/dovecot/passwd'),
     certbotWebroot: optional('CERTBOT_WEBROOT', '/var/www/letsencrypt'),
+    letsencryptLive: optional('LETSENCRYPT_LIVE', '/etc/letsencrypt/live'),
   },
 
   rateLimit: {
@@ -52,8 +58,19 @@ export const config = {
     windowMs: parseInt(optional('RATE_LIMIT_WINDOW_MS', '60000'), 10),
   },
 
+  mariadb: {
+    host: optional('MARIADB_HOST', '127.0.0.1'),
+    port: parseInt(optional('MARIADB_PORT', '3306'), 10),
+    user: optional('MARIADB_USER', 'root'),
+    password: optional('MARIADB_PASSWORD', ''),
+  },
+
+  licensing: {
+    serverUrl: optional('LICENSING_SERVER_URL', 'https://license.nixpanel.io'),
+    licenseKey: optional('LICENSE_KEY', ''),
+  },
+
   features: {
-    terminalEnabled: optional('ENABLE_TERMINAL', 'true') === 'true',
     wsStatsInterval: parseInt(optional('WEBSOCKET_STATS_INTERVAL', '5000'), 10),
   },
 } as const

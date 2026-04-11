@@ -3,26 +3,26 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 // ─── Admin / WHM Users ───────────────────────────────────────────────────────
 
 model AdminUser {
-  id              Int       @id @default(autoincrement())
-  username        String    @unique @db.VarChar(64)
-  passwordHash    String    @db.VarChar(255)
-  email           String    @unique @db.VarChar(255)
-  twoFactorSecret String?   @db.VarChar(64)
-  twoFactorEnabled Boolean  @default(false)
-  lastLogin       DateTime?
-  lastLoginIp     String?   @db.VarChar(45)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id               Int       @id @default(autoincrement())
+  username         String    @unique
+  passwordHash     String
+  email            String    @unique
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean   @default(false)
+  lastLogin        DateTime?
+  lastLoginIp      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  refreshTokens   RefreshToken[]
-  auditLogs       AuditLog[]
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
 
   @@map("admin_users")
 }
@@ -31,25 +31,26 @@ model AdminUser {
 
 model Reseller {
   id               Int       @id @default(autoincrement())
-  username         String    @unique @db.VarChar(64)
-  passwordHash     String    @db.VarChar(255)
-  email            String    @unique @db.VarChar(255)
-  contactName      String?   @db.VarChar(255)
-  company          String?   @db.VarChar(255)
+  username         String    @unique
+  passwordHash     String
+  email            String    @unique
+  contactName      String?
+  company          String?
   maxAccounts      Int       @default(0)
   diskLimitMb      BigInt    @default(0)
   bandwidthLimitMb BigInt    @default(0)
   diskUsedMb       BigInt    @default(0)
   bandwidthUsedMb  BigInt    @default(0)
-  status           String    @default("active") @db.VarChar(20)
-  brandName        String?   @db.VarChar(255)
-  brandLogo        String?   @db.VarChar(500)
-  notes            String?   @db.Text
+  status           String    @default("active")
+  brandName        String?
+  brandLogo        String?
+  notes            String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   accounts         Account[]
   refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
 
   @@map("resellers")
 }
@@ -57,70 +58,70 @@ model Reseller {
 // ─── Hosting Packages ────────────────────────────────────────────────────────
 
 model Package {
-  id                Int      @id @default(autoincrement())
-  name              String   @unique @db.VarChar(100)
-  diskMb            BigInt   @default(1024)
-  bandwidthMb       BigInt   @default(10240)
-  maxDatabases      Int      @default(5)
-  maxEmailAccounts  Int      @default(10)
-  maxSubdomains     Int      @default(10)
-  maxAddonDomains   Int      @default(5)
-  maxParkedDomains  Int      @default(5)
-  maxFtpAccounts    Int      @default(3)
-  maxCronJobs       Int      @default(5)
-  phpVersion        String   @default("8.3") @db.VarChar(10)
-  sslEnabled        Boolean  @default(true)
-  backupEnabled     Boolean  @default(true)
-  dedicatedIp       Boolean  @default(false)
-  notes             String?  @db.Text
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  name             String   @unique
+  diskMb           BigInt   @default(1024)
+  bandwidthMb      BigInt   @default(10240)
+  maxDatabases     Int      @default(5)
+  maxEmailAccounts Int      @default(10)
+  maxSubdomains    Int      @default(10)
+  maxAddonDomains  Int      @default(5)
+  maxParkedDomains Int      @default(5)
+  maxFtpAccounts   Int      @default(3)
+  maxCronJobs      Int      @default(5)
+  phpVersion       String   @default("8.3")
+  sslEnabled       Boolean  @default(true)
+  backupEnabled    Boolean  @default(true)
+  dedicatedIp      Boolean  @default(false)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  accounts          Account[]
+  accounts         Account[]
 
   @@map("packages")
 }
 
-// ─── Hosting Accounts (cPanel users) ─────────────────────────────────────────
+// ─── Hosting Accounts ────────────────────────────────────────────────────────
 
 model Account {
-  id               Int       @id @default(autoincrement())
-  username         String    @unique @db.VarChar(64)
-  passwordHash     String    @db.VarChar(255)
-  email            String    @db.VarChar(255)
-  domain           String    @unique @db.VarChar(255)
-  homedir          String    @db.VarChar(500)
-  shell            String    @default("/bin/false") @db.VarChar(100)
-  status           String    @default("active") @db.VarChar(20)
-  diskUsedMb       BigInt    @default(0)
-  bandwidthUsedMb  BigInt    @default(0)
-  ipAddress        String?   @db.VarChar(45)
-  nameservers      String?   @db.VarChar(500)
-  notes            String?   @db.Text
-  suspendedAt      DateTime?
-  suspendReason    String?   @db.VarChar(500)
-  terminatedAt     DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  passwordHash    String
+  email           String
+  domain          String    @unique
+  homedir         String
+  shell           String    @default("/usr/sbin/nologin")
+  status          String    @default("active")
+  diskUsedMb      BigInt    @default(0)
+  bandwidthUsedMb BigInt    @default(0)
+  ipAddress       String?
+  nameservers     String?
+  notes           String?
+  suspendedAt     DateTime?
+  suspendReason   String?
+  terminatedAt    DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  resellerId       Int?
-  reseller         Reseller? @relation(fields: [resellerId], references: [id])
-  packageId        Int?
-  package          Package?  @relation(fields: [packageId], references: [id])
-  ipId             Int?
-  ip               IpAddress? @relation(fields: [ipId], references: [id])
+  resellerId      Int?
+  reseller        Reseller?  @relation(fields: [resellerId], references: [id])
+  packageId       Int?
+  package         Package?   @relation(fields: [packageId], references: [id])
+  ipId            Int?
+  ip              IpAddress? @relation(fields: [ipId], references: [id])
 
-  dnsZones         DnsZone[]
-  emailAccounts    EmailAccount[]
-  emailForwarders  EmailForwarder[]
-  ftpAccounts      FtpAccount[]
-  databases        Database[]
-  subdomains       Subdomain[]
-  addonDomains     AddonDomain[]
-  parkedDomains    ParkedDomain[]
-  sslCertificates  SslCertificate[]
-  cronJobs         CronJob[]
-  refreshTokens    RefreshToken[]
+  dnsZones        DnsZone[]
+  emailAccounts   EmailAccount[]
+  emailForwarders EmailForwarder[]
+  ftpAccounts     FtpAccount[]
+  databases       Database[]
+  subdomains      Subdomain[]
+  addonDomains    AddonDomain[]
+  parkedDomains   ParkedDomain[]
+  sslCertificates SslCertificate[]
+  cronJobs        CronJob[]
+  refreshTokens   RefreshToken[]
 
   @@map("accounts")
 }
@@ -128,17 +129,17 @@ model Account {
 // ─── IP Addresses ─────────────────────────────────────────────────────────────
 
 model IpAddress {
-  id          Int      @id @default(autoincrement())
-  address     String   @unique @db.VarChar(45)
-  netmask     String?  @db.VarChar(45)
-  gateway     String?  @db.VarChar(45)
-  type        String   @default("shared") @db.VarChar(20)
-  status      String   @default("available") @db.VarChar(20)
-  notes       String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  address   String   @unique
+  netmask   String?
+  gateway   String?
+  type      String   @default("shared")
+  status    String   @default("available")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  accounts    Account[]
+  accounts  Account[]
 
   @@map("ip_addresses")
 }
@@ -146,27 +147,27 @@ model IpAddress {
 // ─── DNS ──────────────────────────────────────────────────────────────────────
 
 model DnsZone {
-  id          Int        @id @default(autoincrement())
-  domain      String     @unique @db.VarChar(255)
-  zoneFile    String?    @db.VarChar(500)
-  serial      BigInt     @default(1)
-  status      String     @default("active") @db.VarChar(20)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        Int         @id @default(autoincrement())
+  domain    String      @unique
+  zoneFile  String?
+  serial    BigInt      @default(1)
+  status    String      @default("active")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
-  accountId   Int
-  account     Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId Int
+  account   Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  records     DnsRecord[]
+  records   DnsRecord[]
 
   @@map("dns_zones")
 }
 
 model DnsRecord {
   id        Int      @id @default(autoincrement())
-  type      String   @db.VarChar(10)
-  name      String   @db.VarChar(255)
-  value     String   @db.VarChar(500)
+  type      String
+  name      String
+  value     String
   ttl       Int      @default(3600)
   priority  Int?
   createdAt DateTime @default(now())
@@ -182,13 +183,13 @@ model DnsRecord {
 
 model EmailAccount {
   id           Int      @id @default(autoincrement())
-  username     String   @db.VarChar(64)
-  domain       String   @db.VarChar(255)
-  address      String   @unique @db.VarChar(320)
-  passwordHash String   @db.VarChar(255)
+  username     String
+  domain       String
+  address      String   @unique
+  passwordHash String
   quotaMb      Int      @default(500)
   usedMb       Int      @default(0)
-  status       String   @default("active") @db.VarChar(20)
+  status       String   @default("active")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -200,8 +201,8 @@ model EmailAccount {
 
 model EmailForwarder {
   id          Int      @id @default(autoincrement())
-  source      String   @db.VarChar(320)
-  destination String   @db.VarChar(320)
+  source      String
+  destination String
   createdAt   DateTime @default(now())
 
   accountId   Int
@@ -214,11 +215,11 @@ model EmailForwarder {
 
 model FtpAccount {
   id           Int      @id @default(autoincrement())
-  username     String   @db.VarChar(64)
-  passwordHash String   @db.VarChar(255)
-  homedir      String   @db.VarChar(500)
+  username     String
+  passwordHash String
+  homedir      String
   quotaMb      Int      @default(0)
-  status       String   @default("active") @db.VarChar(20)
+  status       String   @default("active")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -232,9 +233,9 @@ model FtpAccount {
 
 model Database {
   id        Int            @id @default(autoincrement())
-  name      String         @unique @db.VarChar(64)
-  charset   String         @default("utf8mb4") @db.VarChar(32)
-  collation String         @default("utf8mb4_unicode_ci") @db.VarChar(64)
+  name      String         @unique
+  charset   String         @default("utf8mb4")
+  collation String         @default("utf8mb4_unicode_ci")
   sizeMb    Float          @default(0)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
@@ -249,10 +250,10 @@ model Database {
 
 model DatabaseUser {
   id           Int      @id @default(autoincrement())
-  username     String   @db.VarChar(64)
-  passwordHash String   @db.VarChar(255)
-  host         String   @default("localhost") @db.VarChar(255)
-  privileges   String   @default("ALL") @db.VarChar(255)
+  username     String
+  passwordHash String
+  host         String   @default("localhost")
+  privileges   String   @default("ALL")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -265,25 +266,25 @@ model DatabaseUser {
 // ─── Subdomains / Addon / Parked Domains ─────────────────────────────────────
 
 model Subdomain {
-  id          Int      @id @default(autoincrement())
-  subdomain   String   @db.VarChar(255)
-  domain      String   @db.VarChar(255)
-  fqdn        String   @unique @db.VarChar(510)
-  documentRoot String  @db.VarChar(500)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  subdomain    String
+  domain       String
+  fqdn         String   @unique
+  documentRoot String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  accountId   Int
-  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId    Int
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@map("subdomains")
 }
 
 model AddonDomain {
   id           Int      @id @default(autoincrement())
-  domain       String   @unique @db.VarChar(255)
-  subdomain    String   @db.VarChar(255)
-  documentRoot String   @db.VarChar(500)
+  domain       String   @unique
+  subdomain    String
+  documentRoot String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -295,7 +296,7 @@ model AddonDomain {
 
 model ParkedDomain {
   id        Int      @id @default(autoincrement())
-  domain    String   @unique @db.VarChar(255)
+  domain    String   @unique
   createdAt DateTime @default(now())
 
   accountId Int
@@ -307,21 +308,21 @@ model ParkedDomain {
 // ─── SSL ──────────────────────────────────────────────────────────────────────
 
 model SslCertificate {
-  id           Int      @id @default(autoincrement())
-  domain       String   @db.VarChar(255)
-  type         String   @default("letsencrypt") @db.VarChar(30)
-  certPath     String?  @db.VarChar(500)
-  keyPath      String?  @db.VarChar(500)
-  chainPath    String?  @db.VarChar(500)
-  issuedAt     DateTime?
-  expiresAt    DateTime?
-  autoRenew    Boolean  @default(true)
-  status       String   @default("pending") @db.VarChar(20)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  domain    String
+  type      String    @default("letsencrypt")
+  certPath  String?
+  keyPath   String?
+  chainPath String?
+  issuedAt  DateTime?
+  expiresAt DateTime?
+  autoRenew Boolean   @default(true)
+  status    String    @default("pending")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  accountId    Int
-  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId Int
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@map("ssl_certificates")
 }
@@ -329,18 +330,18 @@ model SslCertificate {
 // ─── Cron Jobs ────────────────────────────────────────────────────────────────
 
 model CronJob {
-  id        Int      @id @default(autoincrement())
-  schedule  String   @db.VarChar(100)
-  command   String   @db.VarChar(1000)
-  comment   String?  @db.VarChar(255)
-  enabled   Boolean  @default(true)
+  id        Int       @id @default(autoincrement())
+  schedule  String
+  command   String
+  comment   String?
+  enabled   Boolean   @default(true)
   lastRun   DateTime?
   nextRun   DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   accountId Int
-  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@map("cron_jobs")
 }
@@ -348,32 +349,32 @@ model CronJob {
 // ─── Security ─────────────────────────────────────────────────────────────────
 
 model SecurityEvent {
-  id          Int      @id @default(autoincrement())
-  type        String   @db.VarChar(50)
-  severity    String   @default("info") @db.VarChar(20)
-  message     String   @db.Text
-  sourceIp    String?  @db.VarChar(45)
-  resolved    Boolean  @default(false)
-  resolvedAt  DateTime?
-  createdAt   DateTime @default(now())
+  id         Int       @id @default(autoincrement())
+  type       String
+  severity   String    @default("info")
+  message    String
+  sourceIp   String?
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   @@map("security_events")
 }
 
 model BlockedIp {
-  id          Int       @id @default(autoincrement())
-  ip          String    @unique @db.VarChar(45)
-  reason      String?   @db.VarChar(500)
-  expiresAt   DateTime?
-  createdAt   DateTime  @default(now())
+  id        Int       @id @default(autoincrement())
+  ip        String    @unique
+  reason    String?
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 
   @@map("blocked_ips")
 }
 
 model WhitelistedIp {
   id        Int      @id @default(autoincrement())
-  ip        String   @unique @db.VarChar(45)
-  note      String?  @db.VarChar(255)
+  ip        String   @unique
+  note      String?
   createdAt DateTime @default(now())
 
   @@map("whitelisted_ips")
@@ -382,15 +383,17 @@ model WhitelistedIp {
 // ─── Audit Log ────────────────────────────────────────────────────────────────
 
 model AuditLog {
-  id          Int       @id @default(autoincrement())
-  action      String    @db.VarChar(100)
-  target      String?   @db.VarChar(255)
-  details     String?   @db.Text
-  sourceIp    String?   @db.VarChar(45)
-  createdAt   DateTime  @default(now())
+  id         Int        @id @default(autoincrement())
+  action     String
+  target     String?
+  details    String?
+  sourceIp   String?
+  createdAt  DateTime   @default(now())
 
-  adminId     Int?
-  admin       AdminUser? @relation(fields: [adminId], references: [id])
+  adminId    Int?
+  admin      AdminUser? @relation(fields: [adminId], references: [id])
+  resellerId Int?
+  reseller   Reseller?  @relation(fields: [resellerId], references: [id])
 
   @@map("audit_log")
 }
@@ -398,19 +401,19 @@ model AuditLog {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 model RefreshToken {
-  id          Int       @id @default(autoincrement())
-  token       String    @unique @db.VarChar(500)
-  role        String    @db.VarChar(20)
-  expiresAt   DateTime
-  revokedAt   DateTime?
-  createdAt   DateTime  @default(now())
+  id         Int        @id @default(autoincrement())
+  token      String     @unique
+  role       String
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime   @default(now())
 
-  adminId     Int?
-  admin       AdminUser? @relation(fields: [adminId], references: [id])
-  resellerId  Int?
-  reseller    Reseller?  @relation(fields: [resellerId], references: [id])
-  accountId   Int?
-  account     Account?   @relation(fields: [accountId], references: [id])
+  adminId    Int?
+  admin      AdminUser? @relation(fields: [adminId], references: [id])
+  resellerId Int?
+  reseller   Reseller?  @relation(fields: [resellerId], references: [id])
+  accountId  Int?
+  account    Account?   @relation(fields: [accountId], references: [id])
 
   @@map("refresh_tokens")
 }
@@ -418,21 +421,9 @@ model RefreshToken {
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
 model Setting {
-  key       String   @id @db.VarChar(100)
-  value     String   @db.Text
+  key       String   @id
+  value     String
   updatedAt DateTime @updatedAt
 
   @@map("settings")
-}
-
-// ─── Terminal Sessions ────────────────────────────────────────────────────────
-
-model TerminalSession {
-  id        Int      @id @default(autoincrement())
-  adminId   Int
-  sourceIp  String?  @db.VarChar(45)
-  startedAt DateTime @default(now())
-  endedAt   DateTime?
-
-  @@map("terminal_sessions")
 }

@@ -3,11 +3,15 @@ import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import prisma from '../../db/client.js'
 import { requireAuth } from '../../middleware/auth.js'
-import { exec } from '../../core/exec.js'
+import {
+  createDatabase,
+  dropDatabase,
+  createDatabaseUser,
+  grantPrivileges,
+  dropDatabaseUser,
+} from '../../core/mariadb.js'
 
-function mysqlEscape(s: string): string {
-  return s.replace(/'/g, "\\'").replace(/\\/g, '\\\\')
-}
+const nameSchema = z.string().min(1).max(32).regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, and underscores allowed')
 
 export default async function databaseRoutes(fastify: FastifyInstance) {
   const preHandler = [requireAuth]
@@ -15,7 +19,9 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
   // GET /api/nixclient/databases
   fastify.get('/', { preHandler }, async (request, reply) => {
     const user = request.user!
-    const accountId = user.role === 'user' ? user.sub : parseInt((request.query as Record<string, string>).accountId ?? '0', 10)
+    const accountId = user.role === 'user'
+      ? user.sub
+      : parseInt((request.query as Record<string, string>).accountId ?? '0', 10)
 
     const databases = await prisma.database.findMany({
       where: { accountId },
@@ -28,10 +34,12 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
   // POST /api/nixclient/databases
   fastify.post('/', { preHandler }, async (request, reply) => {
     const user = request.user!
-    const accountId = user.role === 'user' ? user.sub : parseInt((request.body as Record<string, string>).accountId ?? '0', 10)
+    const accountId = user.role === 'user'
+      ? user.sub
+      : parseInt((request.body as Record<string, string>).accountId ?? '0', 10)
 
     const body = z.object({
-      name: z.string().min(1).max(32).regex(/^[a-zA-Z0-9_]+$/),
+      name: nameSchema,
       charset: z.string().default('utf8mb4'),
       collation: z.string().default('utf8mb4_unicode_ci'),
     }).safeParse(request.body)
@@ -46,7 +54,6 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
     })
     if (!account) return reply.code(404).send({ success: false, error: 'Account not found' })
 
-    // Check quota
     if (account.package && account.package.maxDatabases > 0) {
       const count = await prisma.database.count({ where: { accountId } })
       if (count >= account.package.maxDatabases) {
@@ -54,19 +61,11 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
       }
     }
 
-    // Prefix database name with username to avoid conflicts
     const dbName = `${account.username}_${body.data.name}`
     const exists = await prisma.database.findUnique({ where: { name: dbName } })
     if (exists) return reply.code(409).send({ success: false, error: 'Database already exists' })
 
-    // Create the actual MariaDB database
-    const result = await exec('mysql', [
-      '-e',
-      `CREATE DATABASE \`${mysqlEscape(dbName)}\` CHARACTER SET ${mysqlEscape(body.data.charset)} COLLATE ${mysqlEscape(body.data.collation)};`,
-    ])
-    if (result.exitCode !== 0 && !process.env.NODE_ENV?.startsWith('dev')) {
-      return reply.code(500).send({ success: false, error: `Failed to create database: ${result.stderr}` })
-    }
+    await createDatabase(dbName, body.data.charset, body.data.collation)
 
     const db = await prisma.database.create({
       data: { name: dbName, charset: body.data.charset, collation: body.data.collation, accountId },
@@ -84,10 +83,15 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
         id: parseInt(id, 10),
         ...(user.role === 'user' ? { accountId: user.sub } : {}),
       },
+      include: { dbUsers: true },
     })
     if (!db) return reply.code(404).send({ success: false, error: 'Database not found' })
 
-    await exec('mysql', ['-e', `DROP DATABASE IF EXISTS \`${mysqlEscape(db.name)}\`;`])
+    // Drop all associated users first
+    for (const dbUser of db.dbUsers) {
+      await dropDatabaseUser(dbUser.username)
+    }
+    await dropDatabase(db.name)
     await prisma.database.delete({ where: { id: db.id } })
 
     return reply.send({ success: true, data: { message: `Database ${db.name} deleted` } })
@@ -99,9 +103,9 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
     const user = request.user!
 
     const body = z.object({
-      username: z.string().min(1).max(16).regex(/^[a-zA-Z0-9_]+$/),
+      username: nameSchema,
       password: z.string().min(8),
-      privileges: z.string().default('ALL'),
+      privileges: z.enum(['ALL', 'SELECT', 'SELECT,INSERT,UPDATE,DELETE']).default('ALL'),
     }).safeParse(request.body)
 
     if (!body.success) {
@@ -118,12 +122,9 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
     if (!db) return reply.code(404).send({ success: false, error: 'Database not found' })
 
     const dbUsername = `${db.account.username}_${body.data.username}`
-    const escapedPass = mysqlEscape(body.data.password)
 
-    // Create MariaDB user and grant privileges
-    await exec('mysql', ['-e', `CREATE USER '${mysqlEscape(dbUsername)}'@'localhost' IDENTIFIED BY '${escapedPass}';`])
-    await exec('mysql', ['-e', `GRANT ${mysqlEscape(body.data.privileges)} ON \`${mysqlEscape(db.name)}\`.* TO '${mysqlEscape(dbUsername)}'@'localhost';`])
-    await exec('mysql', ['-e', 'FLUSH PRIVILEGES;'])
+    await createDatabaseUser(dbUsername, body.data.password)
+    await grantPrivileges(db.name, dbUsername, body.data.privileges)
 
     const passwordHash = await bcrypt.hash(body.data.password, 12)
     const dbUser = await prisma.databaseUser.create({
@@ -142,14 +143,18 @@ export default async function databaseRoutes(fastify: FastifyInstance) {
   // DELETE /api/nixclient/databases/:id/users/:userId
   fastify.delete('/:id/users/:userId', { preHandler }, async (request, reply) => {
     const { id, userId } = request.params as { id: string; userId: string }
+    const user = request.user!
 
     const dbUser = await prisma.databaseUser.findFirst({
-      where: { id: parseInt(userId, 10), databaseId: parseInt(id, 10) },
+      where: {
+        id: parseInt(userId, 10),
+        databaseId: parseInt(id, 10),
+        ...(user.role === 'user' ? { database: { accountId: user.sub } } : {}),
+      },
     })
     if (!dbUser) return reply.code(404).send({ success: false, error: 'Database user not found' })
 
-    await exec('mysql', ['-e', `DROP USER IF EXISTS '${mysqlEscape(dbUser.username)}'@'localhost';`])
-    await exec('mysql', ['-e', 'FLUSH PRIVILEGES;'])
+    await dropDatabaseUser(dbUser.username)
     await prisma.databaseUser.delete({ where: { id: dbUser.id } })
 
     return reply.send({ success: true, data: { message: 'Database user deleted' } })
