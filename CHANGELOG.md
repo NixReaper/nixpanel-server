@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.2] — 2026-04-11
+
+### Changes
+- **NixServer sidebar redesigned** — replaced the flat 14-item nav with a full WHM-style collapsible category sidebar (29 categories, ~210 menu items). Categories fold/unfold on click; the active route's category auto-expands on navigation. A live search box at the top of the sidebar filters items across all categories and auto-expands matching results. Sidebar can be hidden entirely via the topbar toggle. All existing routes are wired to their correct menu items; future feature items route to the closest related hub page.
+
+---
+
 ## [0.4.1] — 2026-04-11
 
 ### Bug Fixes (Installer)
