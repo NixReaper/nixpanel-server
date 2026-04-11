@@ -6,6 +6,18 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.5] — 2026-04-11
+
+### Bug Fixes
+- **Sidebar version refresh not updating** — clicking the refresh icon now clears the stale version immediately (shows spinner) and adds a `?_t=` cache-bust parameter so the browser never serves a cached response. Same fix applied to the "Retry" button in the error state.
+- **`uptime` and `kill` missing from exec allowlist** — caused `GET /api/nixserver/system/info` to throw "Command not allowed", returning 500 and leaving Hostname/OS as `…` on the dashboard.
+- **Version fetch auto-retry** — when the version API fails (e.g. during service restart after upgrade), the sidebar now automatically retries every 5 s until it succeeds instead of permanently showing "Version unavailable".
+
+### New Features
+- **Day/Night mode toggle** — sun/moon flip switch at the right end of the dashboard info bar. Light palette: page `#f0f4f8`, cards `#ffffff`. Preference persisted to `localStorage`. All pages switch via seven `[data-theme="light"]` CSS overrides in `index.css` without touching individual page files.
+
+---
+
 ## [0.4.4] — 2026-04-11
 
 ### New Features

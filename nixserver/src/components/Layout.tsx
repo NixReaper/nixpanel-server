@@ -465,10 +465,16 @@ export default function Layout() {
   const [versionError, setVersionError] = useState(false)
   const [upgradeState, setUpgradeState] = useState<'idle' | 'confirm' | 'running' | 'done' | 'error'>('idle')
 
-  const fetchVersion = useCallback(async () => {
+  const fetchVersion = useCallback(async (manual = false) => {
     setVersionError(false)
+    // On a manual refresh, clear the stale value so the spinner shows
+    if (manual) setVersionInfo(null)
     try {
-      const { data } = await api.get('/nixserver/system/version', { timeout: 10_000 })
+      const { data } = await api.get('/nixserver/system/version', {
+        timeout: 10_000,
+        // Cache-bust so the browser never serves a stale version response
+        params: { _t: Date.now() },
+      })
       setVersionInfo(data.data)
     } catch {
       setVersionError(true)
@@ -685,7 +691,7 @@ export default function Layout() {
                   )}
                 </div>
                 <button
-                  onClick={fetchVersion}
+                  onClick={() => fetchVersion(true)}
                   title="Check for updates"
                   className="text-[#4a5568] hover:text-[#94a3b8] transition-colors"
                 >
@@ -741,7 +747,7 @@ export default function Layout() {
           ) : versionError ? (
             <div className="flex items-center justify-between px-1 py-1">
               <span className="text-[#4a5568] text-[10px]">Version unavailable</span>
-              <button onClick={fetchVersion} title="Retry" className="text-[#4a5568] hover:text-[#94a3b8] transition-colors">
+              <button onClick={() => fetchVersion(true)} title="Retry" className="text-[#4a5568] hover:text-[#94a3b8] transition-colors">
                 <RefreshCcw size={10} />
               </button>
             </div>
