@@ -9,8 +9,8 @@ import {
   ChevronDown, ChevronRight, Search, RotateCcw, RefreshCcw,
   ArrowUpCircle, CheckCircle2, AlertCircle, Loader2
 } from 'lucide-react'
-import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
+import { api } from '../api/client'
 
 // ─── Nav data ────────────────────────────────────────────────────────────────
 
@@ -468,7 +468,7 @@ export default function Layout() {
   const fetchVersion = useCallback(async () => {
     setVersionError(false)
     try {
-      const { data } = await axios.get('/api/nixserver/system/version', { timeout: 10_000 })
+      const { data } = await api.get('/nixserver/system/version', { timeout: 10_000 })
       setVersionInfo(data.data)
     } catch {
       setVersionError(true)
@@ -481,7 +481,7 @@ export default function Layout() {
     if (upgradeState === 'confirm') {
       setUpgradeState('running')
       try {
-        await axios.post('/api/nixserver/system/upgrade')
+        await api.post('/nixserver/system/upgrade')
         setUpgradeState('done')
       } catch {
         setUpgradeState('error')
