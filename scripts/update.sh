@@ -14,6 +14,8 @@ INSTALL_DIR="${1:-/opt/nixpanel}"
 [[ -d "$INSTALL_DIR/.git" ]] || error "NixPanel not found at $INSTALL_DIR"
 
 step "Pulling latest code"
+# Discard any local changes to generated/lock files so git pull never conflicts
+git -C "$INSTALL_DIR" checkout -- package-lock.json 2>/dev/null || true
 git -C "$INSTALL_DIR" pull --ff-only
 success "Code updated"
 

@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.9] — 2026-04-11
+
+### Bug Fixes
+- **`update.sh` fails when `package-lock.json` has local changes** — `git pull --ff-only` aborted with "Your local changes would be overwritten by merge" whenever npm had modified the lock file on the server. Fixed by running `git checkout -- package-lock.json` before the pull to discard local changes to the generated lock file.
+
+---
+
 ## [0.4.8] — 2026-04-11
 
 ### Bug Fixes
