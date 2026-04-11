@@ -60,7 +60,7 @@ export async function buildApp() {
   // ─── Static files ────────────────────────────────────────────────────────────
 
   // NixServer frontend
-  const whmDist = path.resolve(__dirname, '../../nixserver/dist')
+  const nixserverDist = path.resolve(__dirname, '../../nixserver/dist')
   const cpanelDist = path.resolve(__dirname, '../../nixclient/dist')
 
   // ─── API Routes ──────────────────────────────────────────────────────────────
@@ -73,7 +73,7 @@ export async function buildApp() {
 
   fastify.get('/api/health', async () => ({
     status: 'ok',
-    version: '0.4.5',
+    version: '0.4.6',
     timestamp: new Date().toISOString(),
   }))
 

@@ -28,7 +28,7 @@ const NAV: NavCategory[] = [
     label: 'Server Configuration',
     icon: Settings,
     items: [
-      { label: 'Basic WebHost Manager® Setup',    to: '/settings' },
+      { label: 'Basic NixServer Setup',             to: '/settings' },
       { label: 'Change Root Password',             to: '/security' },
       { label: 'Configure Analytics',              to: '/settings' },
       { label: 'Configure Cron Jobs',              to: '/settings' },
@@ -40,7 +40,7 @@ const NAV: NavCategory[] = [
       { label: 'Terminal',                         to: '/system'   },
       { label: 'Tweak Settings',                   to: '/settings' },
       { label: 'Update Preferences',               to: '/settings' },
-      { label: 'WHM Marketplace',                  to: '/settings' },
+      { label: 'NixServer Marketplace',             to: '/settings' },
     ],
   },
   {
@@ -424,7 +424,7 @@ const NAV: NavCategory[] = [
       { label: 'Manage API Tokens',                  to: '/settings' },
       { label: 'Manage Hooks',                       to: '/settings' },
       { label: 'OpenAPI Documentation for NixPanel', to: '/settings' },
-      { label: 'OpenAPI Documentation for WHM',      to: '/settings' },
+      { label: 'OpenAPI Documentation for NixServer', to: '/settings' },
     ],
   },
   {

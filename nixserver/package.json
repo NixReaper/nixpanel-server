@@ -1,6 +1,6 @@
 {
-  "name": "@nixpanel/whm",
-  "version": "0.4.3",
+  "name": "@nixpanel/nixserver",
+  "version": "0.4.6",
   "private": true,
   "type": "module",
   "scripts": {

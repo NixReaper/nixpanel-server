@@ -6,6 +6,17 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.6] — 2026-04-11
+
+### Changes
+- **Removed all WHM trademark references** — "WHM" is a registered trademark of cPanel, L.L.C. All occurrences replaced with "NixServer":
+  - Sidebar menu item "Basic WebHost Manager® Setup" → "Basic NixServer Setup"
+  - Sidebar menu item "WHM Marketplace" → "NixServer Marketplace"
+  - Sidebar menu item "OpenAPI Documentation for WHM" → "OpenAPI Documentation for NixServer"
+  - Internal npm package name `@nixpanel/whm` → `@nixpanel/nixserver`
+
+---
+
 ## [0.4.5] — 2026-04-11
 
 ### Bug Fixes
