@@ -6,6 +6,7 @@ import domainRoutes from './domains.js'
 import ftpRoutes from './ftp.js'
 import cronRoutes from './cron.js'
 import statsRoutes from './stats.js'
+import sslRoutes from './ssl.js'
 
 export default async function nixclientRoutes(fastify: FastifyInstance) {
   fastify.register(fileRoutes, { prefix: '/files' })
@@ -15,4 +16,5 @@ export default async function nixclientRoutes(fastify: FastifyInstance) {
   fastify.register(ftpRoutes, { prefix: '/ftp' })
   fastify.register(cronRoutes, { prefix: '/cron' })
   fastify.register(statsRoutes, { prefix: '/stats' })
+  fastify.register(sslRoutes, { prefix: '/ssl' })
 }

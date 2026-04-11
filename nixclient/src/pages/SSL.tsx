@@ -10,14 +10,14 @@ export default function SSL() {
 
   const fetch = async () => {
     setLoading(true)
-    try { const r = await api.get('/nixserver/ssl'); setCerts(r.data.data) }
+    try { const r = await api.get('/nixclient/ssl'); setCerts(r.data.data) }
     finally { setLoading(false) }
   }
 
   useEffect(() => { fetch() }, [])
 
   const renew = async (id: number) => {
-    try { await api.post(`/nixserver/ssl/${id}/renew`); fetch() }
+    try { await api.post(`/nixclient/ssl/${id}/renew`); fetch() }
     catch (err: unknown) { alert((err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Renewal failed') }
   }
 
