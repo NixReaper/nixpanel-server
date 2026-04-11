@@ -6,6 +6,17 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.4.1] — 2026-04-11
+
+### Bug Fixes (Installer)
+- **SpamAssassin service name**: On Ubuntu 24.04 the service unit is `spamd`, not `spamassassin`. The old `systemctl enable spamassassin` caused the install to abort due to `set -euo pipefail`.
+- **PowerDNS port 53 conflict**: `systemd-resolved` stub listener now disabled in a dedicated step that runs *before* package installation. Previously it ran after apt had already tried (and failed) to restart `pdns` during post-install because port 53 was still held by `systemd-resolved`.
+- **Git clone into pre-existing directory**: The directory structure step (`mkdir -p`) creates `$INSTALL_DIR` before the clone step, causing `git clone` to fail with "destination path already exists". Fixed by cloning to a temp directory and copying contents into place (preserving any existing `data/` and `logs/` subdirectories).
+- **Apache 403 on frontend assets**: Frontend dist files were created with root-only permissions. Added a post-build step that sets 755/644 on all dist directories and files so Apache (`www-data`) can read them.
+- **Apache 500 on all API requests**: `mod_proxy_http` was not enabled. Without it, `ProxyPass http://...` directives silently fail and Apache returns 500 for every API call. Also enabled `mod_proxy_wstunnel` (required for the `ws://` WebSocket reverse proxy).
+
+---
+
 ## [0.4.0] — 2026-04-11
 
 ### New Features
