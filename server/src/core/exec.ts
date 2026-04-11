@@ -24,7 +24,7 @@ const ALLOWED_COMMANDS = new Set([
   // Network
   'ss', 'ip', 'hostname',
   // System
-  'uname', 'free', 'ps',
+  'uname', 'uptime', 'free', 'ps', 'kill',
   // PHP
   'php8.2', 'php8.3',
   // Fail2ban

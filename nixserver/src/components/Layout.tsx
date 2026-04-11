@@ -475,7 +475,15 @@ export default function Layout() {
     }
   }, [])
 
+  // Initial fetch
   useEffect(() => { fetchVersion() }, [fetchVersion])
+
+  // Auto-retry every 5 s while in error state (handles the service-restart window after an upgrade)
+  useEffect(() => {
+    if (!versionError) return
+    const t = setTimeout(fetchVersion, 5_000)
+    return () => clearTimeout(t)
+  }, [versionError, fetchVersion])
 
   const handleUpgrade = async () => {
     if (upgradeState === 'confirm') {
