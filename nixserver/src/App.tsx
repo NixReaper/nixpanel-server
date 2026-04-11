@@ -23,6 +23,22 @@ const System     = React.lazy(() => import('./pages/System'))
 const WebServer  = React.lazy(() => import('./pages/WebServer'))
 const Settings   = React.lazy(() => import('./pages/Settings'))
 
+// Server Configuration section
+const ServerConfiguration     = React.lazy(() => import('./pages/server-configuration/index'))
+const SCBasicSetup            = React.lazy(() => import('./pages/server-configuration/BasicSetup'))
+const SCChangeRoot            = React.lazy(() => import('./pages/server-configuration/ChangeRoot'))
+const SCAnalytics             = React.lazy(() => import('./pages/server-configuration/Analytics'))
+const SCCronJobs              = React.lazy(() => import('./pages/server-configuration/CronJobs'))
+const SCQuotaSetup            = React.lazy(() => import('./pages/server-configuration/QuotaSetup'))
+const SCLinkNodes             = React.lazy(() => import('./pages/server-configuration/LinkNodes'))
+const SCServerProfile         = React.lazy(() => import('./pages/server-configuration/ServerProfile'))
+const SCServerTime            = React.lazy(() => import('./pages/server-configuration/ServerTime'))
+const SCStatisticsSoftware    = React.lazy(() => import('./pages/server-configuration/StatisticsSoftware'))
+const SCTerminal              = React.lazy(() => import('./pages/server-configuration/Terminal'))
+const SCTweakSettings         = React.lazy(() => import('./pages/server-configuration/TweakSettings'))
+const SCUpdatePreferences     = React.lazy(() => import('./pages/server-configuration/UpdatePreferences'))
+const SCMarketplace           = React.lazy(() => import('./pages/server-configuration/Marketplace'))
+
 // Accounts sub-pages
 const AccountList             = React.lazy(() => import('./pages/accounts/List'))
 const AccountParkedDomains    = React.lazy(() => import('./pages/accounts/ParkedDomains'))
@@ -180,6 +196,52 @@ function AppRoutes() {
         <Route path="accounts/bulk-modify" element={
           <React.Suspense fallback={<PageLoader />}><AccountBulkModify /></React.Suspense>
         } />
+
+        {/* Server Configuration section */}
+        <Route path="server-configuration" element={
+          <React.Suspense fallback={<PageLoader />}><ServerConfiguration /></React.Suspense>
+        } />
+        <Route path="server-configuration/basic-setup" element={
+          <React.Suspense fallback={<PageLoader />}><SCBasicSetup /></React.Suspense>
+        } />
+        <Route path="server-configuration/change-root" element={
+          <React.Suspense fallback={<PageLoader />}><SCChangeRoot /></React.Suspense>
+        } />
+        <Route path="server-configuration/analytics" element={
+          <React.Suspense fallback={<PageLoader />}><SCAnalytics /></React.Suspense>
+        } />
+        <Route path="server-configuration/cron-jobs" element={
+          <React.Suspense fallback={<PageLoader />}><SCCronJobs /></React.Suspense>
+        } />
+        <Route path="server-configuration/quota-setup" element={
+          <React.Suspense fallback={<PageLoader />}><SCQuotaSetup /></React.Suspense>
+        } />
+        <Route path="server-configuration/link-nodes" element={
+          <React.Suspense fallback={<PageLoader />}><SCLinkNodes /></React.Suspense>
+        } />
+        <Route path="server-configuration/server-profile" element={
+          <React.Suspense fallback={<PageLoader />}><SCServerProfile /></React.Suspense>
+        } />
+        <Route path="server-configuration/server-time" element={
+          <React.Suspense fallback={<PageLoader />}><SCServerTime /></React.Suspense>
+        } />
+        <Route path="server-configuration/statistics-software" element={
+          <React.Suspense fallback={<PageLoader />}><SCStatisticsSoftware /></React.Suspense>
+        } />
+        <Route path="server-configuration/terminal" element={
+          <React.Suspense fallback={<PageLoader />}><SCTerminal /></React.Suspense>
+        } />
+        <Route path="server-configuration/tweak-settings" element={
+          <React.Suspense fallback={<PageLoader />}><SCTweakSettings /></React.Suspense>
+        } />
+        <Route path="server-configuration/update-preferences" element={
+          <React.Suspense fallback={<PageLoader />}><SCUpdatePreferences /></React.Suspense>
+        } />
+        <Route path="server-configuration/marketplace" element={
+          <React.Suspense fallback={<PageLoader />}><SCMarketplace /></React.Suspense>
+        } />
+        {/* Redirect old /settings to new canonical route */}
+        <Route path="settings" element={<Navigate to="/server-configuration/basic-setup" replace />} />
 
         {/* Other sections */}
         <Route path="packages" element={<Packages />} />
