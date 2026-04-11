@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Users, Server, HardDrive, Activity, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Users, Server, HardDrive, Activity, AlertTriangle, CheckCircle2, Sun, Moon } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { api } from '../api/client'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface SystemStats {
   cpu: number
@@ -71,6 +72,7 @@ function Divider() {
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [stats, setStats] = useState<SystemStats | null>(null)
   const [accountStats, setAccountStats] = useState<AccountStats | null>(null)
   const [cpuHistory, setCpuHistory] = useState<{ t: string; cpu: number; mem: number }[]>([])
@@ -164,17 +166,42 @@ export default function Dashboard() {
 
       {/* ── cPanel-style server info bar ─────────────────────────────────── */}
       <div className="bg-[#1a1d27] border border-[#2a2d3e] rounded-xl px-5 py-3.5 flex flex-wrap items-center gap-x-5 gap-y-3">
-        <InfoCell label="Username"        value={user?.username ?? '…'} />
+        <InfoCell label="Username"          value={user?.username ?? '…'} />
         <Divider />
-        <InfoCell label="Hostname"        value={systemInfo?.hostname ?? '…'} />
+        <InfoCell label="Hostname"          value={systemInfo?.hostname ?? '…'} />
         <Divider />
-        <InfoCell label="OS"              value={systemInfo?.os ?? '…'} />
+        <InfoCell label="OS"                value={systemInfo?.os ?? '…'} />
         <Divider />
-        <InfoCell label="NixPanel Version" value={version ? `v${version}` : '…'} />
+        <InfoCell label="NixPanel Version"  value={version ? `v${version}` : '…'} />
         <Divider />
-        <InfoCell label="Load Averages"   value={loadStr} />
+        <InfoCell label="Load Averages"     value={loadStr} />
         <Divider />
         <InfoCell label="Server Monitoring" value={monitoringNode} />
+
+        {/* ── Day / Night toggle — far right ── */}
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+          <Moon
+            size={13}
+            className={theme === 'dark' ? 'text-indigo-400' : 'text-[#94a3b8]'}
+          />
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to day mode' : 'Switch to night mode'}
+            className={`relative flex items-center w-10 h-5 rounded-full transition-colors cursor-pointer flex-shrink-0 ${
+              theme === 'light' ? 'bg-amber-400' : 'bg-[#2a2d3e]'
+            }`}
+          >
+            <span
+              className={`absolute h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                theme === 'light' ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+          <Sun
+            size={13}
+            className={theme === 'light' ? 'text-amber-500' : 'text-[#4a5568]'}
+          />
+        </div>
       </div>
 
       {/* ── Stat cards ───────────────────────────────────────────────────── */}
@@ -210,8 +237,14 @@ export default function Dashboard() {
               <XAxis dataKey="t" tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
               <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={{ background: '#1e2130', border: '1px solid #2a2d3e', borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: '#94a3b8' }}
+                contentStyle={{
+                  background: theme === 'light' ? '#ffffff' : '#1e2130',
+                  border: `1px solid ${theme === 'light' ? '#e2e8f0' : '#2a2d3e'}`,
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: theme === 'light' ? '#0f172a' : '#e2e8f0',
+                }}
+                labelStyle={{ color: theme === 'light' ? '#64748b' : '#94a3b8' }}
               />
               <Area type="monotone" dataKey="cpu" stroke="#6366f1" fill="url(#cpu)" strokeWidth={2} name="CPU %" />
               <Area type="monotone" dataKey="mem" stroke="#10b981" fill="url(#mem)" strokeWidth={2} name="Mem %" />

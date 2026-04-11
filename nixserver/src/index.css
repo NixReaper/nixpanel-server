@@ -45,3 +45,45 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #3a3d4e;
 }
+
+/* ── Light theme ─────────────────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --bg-primary:   #f0f4f8;
+  --bg-secondary: #ffffff;
+  --bg-card:      #f1f5f9;
+  --border:       #e2e8f0;
+  --text-primary: #0f172a;
+  --text-muted:   #64748b;
+}
+
+[data-theme="light"] body {
+  background-color: #f0f4f8;
+  color: #0f172a;
+}
+
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-track { background: #f1f5f9; }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Background overrides ──────────────────────────────────────────────── */
+/* Page background (darkest) */
+[data-theme="light"] .bg-\[\#0f1117\] { background-color: #f0f4f8 !important; }
+/* Cards / sidebar */
+[data-theme="light"] .bg-\[\#1a1d27\] { background-color: #ffffff !important; }
+/* Hover / alternate rows */
+[data-theme="light"] .bg-\[\#1e2130\] { background-color: #f1f5f9 !important; }
+
+/* ── Border overrides ──────────────────────────────────────────────────── */
+[data-theme="light"] .border-\[\#2a2d3e\]   { border-color: #e2e8f0 !important; }
+
+/* ── Text overrides ────────────────────────────────────────────────────── */
+[data-theme="light"] .text-white             { color: #0f172a !important; }
+[data-theme="light"] .text-\[\#94a3b8\]      { color: #475569 !important; }
+[data-theme="light"] .text-\[\#64748b\]      { color: #64748b !important; }
+[data-theme="light"] .text-\[\#4a5568\]      { color: #94a3b8 !important; }
+
+/* ── Input fields ──────────────────────────────────────────────────────── */
+[data-theme="light"] input                   { color: #0f172a !important; }
+[data-theme="light"] input::placeholder      { color: #94a3b8 !important; }
