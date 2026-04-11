@@ -482,7 +482,12 @@ if [[ -d "$INSTALL_DIR/.git" ]]; then
   git -C "$INSTALL_DIR" pull --ff-only
 else
   info "Cloning repository into $INSTALL_DIR..."
-  git clone https://github.com/NixReaper/nixpanel-server.git "$INSTALL_DIR"
+  # The directory may already exist (created by the mkdir step above).
+  # Clone to a temp dir then copy contents in so data/ and logs/ are preserved.
+  TMP_CLONE=$(mktemp -d)
+  git clone https://github.com/NixReaper/nixpanel-server.git "$TMP_CLONE"
+  cp -a "$TMP_CLONE/." "$INSTALL_DIR/"
+  rm -rf "$TMP_CLONE"
 fi
 success "NixPanel source ready at $INSTALL_DIR"
 
