@@ -146,6 +146,18 @@ if ! step_done "nodejs"; then
 fi
 success "Node.js $(node --version) ready"
 
+# ── Disable systemd-resolved stub listener (frees port 53 for PowerDNS) ─────
+step "Freeing port 53 for PowerDNS"
+if ! step_done "resolved_stub"; then
+  # Ubuntu 24.04 runs systemd-resolved with a stub listener on 127.0.0.53:53.
+  # PowerDNS's apt post-install restart fails if this is still active.
+  sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf 2>/dev/null || true
+  sed -i 's/^DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf 2>/dev/null || true
+  systemctl restart systemd-resolved 2>/dev/null || true
+  mark_done "resolved_stub"
+fi
+success "Port 53 freed"
+
 # ── Install all services in one pass ─────────────────────────────────────────
 step "Installing web stack (Apache, PHP, Exim, Dovecot, PowerDNS, MariaDB)"
 if ! step_done "packages"; then
@@ -344,10 +356,6 @@ setuid=pdns
 setgid=pdns
 PDNS
 
-  # Disable systemd-resolved on port 53 to avoid conflict
-  sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf 2>/dev/null || true
-  systemctl restart systemd-resolved 2>/dev/null || true
-
   systemctl enable pdns
   systemctl start pdns
 
@@ -431,10 +439,9 @@ success "Dovecot configured"
 # ── Configure SpamAssassin ────────────────────────────────────────────────────
 step "Configuring SpamAssassin"
 if ! step_done "spamassassin"; then
-  sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/spamassassin 2>/dev/null || true
-  sed -i 's/CRON=0/CRON=1/' /etc/default/spamassassin 2>/dev/null || true
-  systemctl enable spamassassin
-  systemctl start spamassassin
+  # Ubuntu 24.04: service unit is 'spamd', not 'spamassassin'
+  systemctl enable spamd
+  systemctl start spamd
   mark_done "spamassassin"
 fi
 success "SpamAssassin configured"
