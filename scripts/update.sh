@@ -25,7 +25,7 @@ success "Dependencies ready"
 step "Running migrations"
 cd "$INSTALL_DIR/server"
 npx prisma generate
-npx prisma migrate deploy
+npx prisma db push
 success "Migrations applied"
 
 step "Rebuilding frontends"
