@@ -7,19 +7,14 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Seeding database...')
 
-  // Admin user
-  const existing = await prisma.adminUser.findUnique({ where: { username: config.admin.username } })
-  if (!existing) {
-    const hash = await bcrypt.hash(config.admin.password, 12)
-    await prisma.adminUser.create({
-      data: {
-        username: config.admin.username,
-        passwordHash: hash,
-        email: config.admin.email,
-      },
-    })
-    console.log(`Created admin user: ${config.admin.username}`)
-  }
+  // Admin user — upsert so re-runs always sync the password from .env
+  const hash = await bcrypt.hash(config.admin.password, 12)
+  await prisma.adminUser.upsert({
+    where: { username: config.admin.username },
+    update: { passwordHash: hash, email: config.admin.email },
+    create: { username: config.admin.username, passwordHash: hash, email: config.admin.email },
+  })
+  console.log(`Admin user ready: ${config.admin.username}`)
 
   // Default packages
   const packages = [

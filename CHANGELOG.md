@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.6.6] — 2026-04-12
+
+### Bug Fixes
+- **`seed.ts` skips admin on re-run** — `findUnique` + `create` meant re-running the seed after a failed install left the admin password in `.env` out of sync with the hashed password in the database. Changed to `upsert` so the seed always writes the current `.env` password, making re-runs safe.
+
+---
+
 ## [0.6.5] — 2026-04-12
 
 ### Bug Fixes
