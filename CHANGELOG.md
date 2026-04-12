@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.5.2] — 2026-04-11
+
+### Bug Fixes
+- **`curl | bash` aborts immediately at confirmation prompt** — `set -euo pipefail` caused the script to exit when `read` received EOF from the pipe instead of a terminal. Fixed by reading from `/dev/tty` directly so the prompt works correctly whether the script is piped or run from a file.
+
+---
+
 ## [0.5.1] — 2026-04-11
 
 ### Bug Fixes
