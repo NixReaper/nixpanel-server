@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.6.5] — 2026-04-12
+
+### Bug Fixes
+- **`install.sh` regenerates secrets on re-run** — `JWT_SECRET`, `JWT_REFRESH_SECRET`, and `MARIADB_ROOT_PASS` were always generated fresh, so re-running the installer after a failed build overwrote `.env` with secrets that no longer matched the already-configured MariaDB password. The installer now reads existing values from `.env` (if present) and only generates new secrets when none exist.
+
+---
+
 ## [0.6.4] — 2026-04-12
 
 ### Bug Fixes

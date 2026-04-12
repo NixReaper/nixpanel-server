@@ -82,11 +82,21 @@ if [[ -z "$ADMIN_EMAIL" ]]; then
   ADMIN_EMAIL="admin@$(hostname -f 2>/dev/null || echo localhost)"
 fi
 
-# Redirect all interactive reads to /dev/tty so curl | bash works correctly
+# ── Preserve secrets across re-runs ──────────────────────────────────────────
+# If .env already exists, reuse the same secrets so a failed-and-retried
+# install doesn't leave MariaDB with a password that doesn't match .env.
+_EXISTING_ENV="${INSTALL_DIR}/server/.env"
+if [[ -f "$_EXISTING_ENV" ]]; then
+  _read_env() { grep -m1 "^$1=" "$_EXISTING_ENV" 2>/dev/null | cut -d= -f2- | tr -d '"'; }
+  MARIADB_ROOT_PASS=$(_read_env MARIADB_PASSWORD)
+  JWT_SECRET=$(_read_env JWT_SECRET)
+  JWT_REFRESH_SECRET=$(_read_env JWT_REFRESH_SECRET)
+fi
 
-MARIADB_ROOT_PASS=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)
-JWT_SECRET=$(gen_secret)
-JWT_REFRESH_SECRET=$(gen_secret)
+# Fill in any values that weren't in the existing .env (or first install)
+MARIADB_ROOT_PASS=${MARIADB_ROOT_PASS:-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 24)}
+JWT_SECRET=${JWT_SECRET:-$(gen_secret)}
+JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-$(gen_secret)}
 
 # ── Confirm ───────────────────────────────────────────────────────────────────
 echo -e "${BOLD}Installation summary:${RESET}"
