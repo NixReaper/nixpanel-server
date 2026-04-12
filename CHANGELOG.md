@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.6.3] — 2026-04-12
+
+### Bug Fixes
+- **`install.sh` aborts immediately when piped via `curl | bash`** — Interactive confirmation prompt (`read`) received EOF from the pipe and exited non-zero, causing `set -euo pipefail` to kill the script before installation began. Replaced the prompt entirely with a 5-second countdown (`sleep 5`) so the installer works correctly whether piped or run from a file.
+
+---
+
 ## [0.6.2] — 2026-04-12
 
 ### Bug Fixes
