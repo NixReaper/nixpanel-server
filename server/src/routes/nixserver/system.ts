@@ -99,6 +99,20 @@ export default async function systemRoutes(fastify: FastifyInstance) {
     })
   })
 
+  // GET /api/nixserver/system/network-interfaces
+  fastify.get('/network-interfaces', { preHandler: [requireAdmin] }, async (_request, reply) => {
+    try {
+      const result = await exec('ls', ['/sys/class/net'])
+      const ifaces = result.stdout
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s && s !== 'lo') // exclude loopback
+      return reply.send({ success: true, data: ifaces })
+    } catch {
+      return reply.send({ success: true, data: [] })
+    }
+  })
+
   // GET /api/nixserver/system/settings
   fastify.get('/settings', { preHandler: [requireAdmin] }, async (request, reply) => {
     const settings = await prisma.setting.findMany({ orderBy: { key: 'asc' } })

@@ -6,10 +6,32 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
-## [0.5.2] — 2026-04-11
+## [0.6.2] — 2026-04-12
 
 ### Bug Fixes
 - **`curl | bash` aborts immediately at confirmation prompt** — `set -euo pipefail` caused the script to exit when `read` received EOF from the pipe instead of a terminal. Fixed by reading from `/dev/tty` directly so the prompt works correctly whether the script is piped or run from a file.
+
+---
+
+## [0.6.1] — 2026-04-11
+
+### Changes
+- **`CLAUDE.md` added** — development standards file auto-read by Claude Code before every session. Documents version numbering rules, changelog format, commit message conventions, file size limits, section/page architecture patterns, API conventions, and project structure.
+
+---
+
+## [0.6.0] — 2026-04-11
+
+### Features
+- **Basic NixServer Setup page** — full WHM-equivalent settings page at `/server-configuration/basic-setup` with two tabs (Contact Information, Basic Config) and a Nameservers section.
+- **Server Configuration section page** — new section index at `/server-configuration` showing all 13 tools as a card grid.
+- **`GET /api/nixserver/system/network-interfaces`** — new endpoint returning all non-loopback interfaces, used to populate the Ethernet Device dropdown.
+
+### Refactors
+- **File size limit enforced** — `Layout.tsx`, `Settings.tsx`, `accounts.ts` each split into focused sub-files under 300 lines.
+- **`NavCategory` gains optional `to` field** — links sidebar category headers to section index pages.
+- **Shared components added** — `SectionCard.tsx` and `ComingSoon.tsx`.
+- **`/settings` redirected** to `/server-configuration/basic-setup` for backwards compatibility.
 
 ---
 

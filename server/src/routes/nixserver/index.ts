@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import accountRoutes from './accounts.js'
+import accountRoutes from './accounts/index.js'
 import packageRoutes from './packages.js'
 import resellerRoutes from './resellers.js'
 import dnsRoutes from './dns.js'
