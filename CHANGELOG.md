@@ -6,6 +6,13 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
+## [0.6.4] — 2026-04-12
+
+### Bug Fixes
+- **`SectionCard.tsx` TypeScript build error** — `icon` prop typed as `ComponentType<{ size?: number }>` but Lucide icons declare `size?: string | number`. Widened the prop type to `size?: number | string` to match Lucide's `LucideProps`.
+
+---
+
 ## [0.6.3] — 2026-04-12
 
 ### Bug Fixes

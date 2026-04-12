@@ -5,7 +5,7 @@ interface SectionCardProps {
   label: string
   description?: string
   to: string
-  icon?: ComponentType<{ size?: number; className?: string }>
+  icon?: ComponentType<{ size?: number | string; className?: string }>
   comingSoon?: boolean
 }
 
