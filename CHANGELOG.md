@@ -21,8 +21,6 @@ Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
 
 ---
 
----
-
 ## [0.6.6] — 2026-04-12
 
 ### Bug Fixes
