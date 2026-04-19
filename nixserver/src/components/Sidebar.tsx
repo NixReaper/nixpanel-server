@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../api/client'
-import { NAV, isItemActive } from './navData'
+import { getNav, isItemActive } from './navData'
 
 type VersionInfo = {
   currentVersion: string
@@ -15,7 +15,7 @@ type VersionInfo = {
   updateAvailable: boolean
 }
 
-type UpgradeState = 'idle' | 'confirm' | 'running' | 'done' | 'error'
+type UpgradeState = 'idle' | 'confirm' | 'running' | 'restarting' | 'ready' | 'error'
 
 interface SidebarProps {
   open: boolean
@@ -23,7 +23,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ open, onToggle }: SidebarProps) {
-  const { user, logout } = useAuth()
+  const { user, logout, enabledModules, hasModule } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -31,6 +31,8 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null)
   const [versionError, setVersionError] = useState(false)
   const [upgradeState, setUpgradeState] = useState<UpgradeState>('idle')
+  const nav = useMemo(() => getNav(enabledModules), [enabledModules])
+  const canManageSystem = hasModule('system')
 
   // ── Version checking ───────────────────────────────────────────────────────
 
@@ -48,20 +50,23 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
     }
   }, [])
 
-  useEffect(() => { fetchVersion() }, [fetchVersion])
+  useEffect(() => {
+    if (!canManageSystem) return
+    fetchVersion()
+  }, [canManageSystem, fetchVersion])
 
   useEffect(() => {
-    if (!versionError) return
+    if (!canManageSystem || !versionError) return
     const t = setTimeout(fetchVersion, 5_000)
     return () => clearTimeout(t)
-  }, [versionError, fetchVersion])
+  }, [canManageSystem, versionError, fetchVersion])
 
   const handleUpgrade = async () => {
     if (upgradeState === 'confirm') {
       setUpgradeState('running')
       try {
         await api.post('/nixserver/system/upgrade')
-        setUpgradeState('done')
+        setUpgradeState('ready')
       } catch {
         setUpgradeState('error')
       }
@@ -72,21 +77,16 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
 
   // ── Category open/close ────────────────────────────────────────────────────
 
-  const [openCats, setOpenCats] = useState<Set<string>>(() => {
-    const active = NAV.find(cat =>
-      cat.items.some(item => isItemActive(item.to, location.pathname))
-    )
-    return active ? new Set([active.id]) : new Set()
-  })
+  const [openCats, setOpenCats] = useState<Set<string>>(() => new Set())
 
   useEffect(() => {
-    const active = NAV.find(cat =>
+    const active = nav.find(cat =>
       cat.items.some(item => isItemActive(item.to, location.pathname))
     )
     if (active) {
       setOpenCats(prev => prev.has(active.id) ? prev : new Set([...prev, active.id]))
     }
-  }, [location.pathname])
+  }, [location.pathname, nav])
 
   const toggleCat = (id: string) => {
     setOpenCats(prev => {
@@ -100,12 +100,12 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
 
   const filteredNav = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return NAV
-    return NAV.map(cat => ({
+    if (!q) return nav
+    return nav.map(cat => ({
       ...cat,
       items: cat.items.filter(item => item.label.toLowerCase().includes(q)),
     })).filter(cat => cat.items.length > 0 || cat.label.toLowerCase().includes(q))
-  }, [search])
+  }, [nav, search])
 
   const effectiveOpen = (id: string) =>
     search.trim() ? filteredNav.some(c => c.id === id) : openCats.has(id)
@@ -238,6 +238,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
       </nav>
 
       {/* Version + upgrade */}
+      {canManageSystem && (
       <div className="border-t border-[#2a2d3e] px-3 pt-2.5 pb-1 flex-shrink-0">
         {versionInfo ? (
           <div className="space-y-1.5">
@@ -262,7 +263,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
               </button>
             </div>
 
-            {upgradeState === 'done' ? (
+            {upgradeState === 'ready' ? (
               <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-emerald-600/10 text-emerald-400 text-[10px]">
                 <CheckCircle2 size={11} />
                 <span>Upgrade started — panel restarting…</span>
@@ -320,6 +321,7 @@ export default function Sidebar({ open, onToggle }: SidebarProps) {
           </div>
         )}
       </div>
+      )}
 
       {/* User + logout */}
       <div className="border-t border-[#2a2d3e] p-3 flex-shrink-0">

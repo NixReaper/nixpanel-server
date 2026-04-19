@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { api } from '../api/client'
+import {
+  ALL_NIXSERVER_MODULE_IDS,
+  isNixserverModuleId,
+  type NixserverModuleId,
+  type NixserverModuleInfo,
+} from '../modules/catalog'
 
 interface User {
   id: number
@@ -12,6 +18,8 @@ interface AuthContextValue {
   user: User | null
   loading: boolean
   setupComplete: boolean
+  enabledModules: NixserverModuleId[]
+  hasModule: (id: NixserverModuleId) => boolean
   markSetupComplete: () => void
   login: (username: string, password: string) => Promise<void>
   logout: () => Promise<void>
@@ -23,10 +31,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [setupComplete, setSetupComplete] = useState(true)
+  const [enabledModules, setEnabledModules] = useState<NixserverModuleId[]>(ALL_NIXSERVER_MODULE_IDS)
+
+  const loadModules = useCallback(async () => {
+    try {
+      const { data } = await api.get('/nixserver/modules')
+      const modules = (data.data?.modules ?? []) as NixserverModuleInfo[]
+      const next = modules
+        .map(module => module.id)
+        .filter(isNixserverModuleId)
+
+      setEnabledModules(next.length > 0 ? next : ALL_NIXSERVER_MODULE_IDS)
+    } catch {
+      // Fail open in the UI; backend route registration remains authoritative.
+      setEnabledModules(ALL_NIXSERVER_MODULE_IDS)
+    }
+  }, [])
 
   const fetchMe = useCallback(async () => {
     const token = localStorage.getItem('access_token')
-    if (!token) { setLoading(false); return }
+    if (!token) {
+      setLoading(false)
+      return
+    }
+
     try {
       const { data } = await api.get('/auth/me')
       if (data.data.role !== 'admin' && data.data.role !== 'reseller') {
@@ -34,40 +62,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
         return
       }
+
       setUser(data.data)
 
-      // Only admins trigger the setup check
       if (data.data.role === 'admin') {
         const { data: setupData } = await api.get('/nixserver/setup/status')
         setSetupComplete(setupData.data.setupComplete)
       }
+
+      await loadModules()
     } catch {
       localStorage.clear()
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [loadModules])
 
   useEffect(() => { fetchMe() }, [fetchMe])
 
   const login = async (username: string, password: string) => {
     const { data } = await api.post('/auth/login', { username, password })
     if (data.data.role !== 'admin' && data.data.role !== 'reseller') {
-      throw new Error('Access denied — NixServer is for administrators and resellers only')
+      throw new Error('Access denied â€” NixServer is for administrators and resellers only')
     }
+
     localStorage.setItem('access_token', data.data.accessToken)
     localStorage.setItem('refresh_token', data.data.refreshToken)
     setUser(data.data.user)
 
-    // Check setup status after login
     if (data.data.role === 'admin') {
       try {
         const { data: setupData } = await api.get('/nixserver/setup/status')
         setSetupComplete(setupData.data.setupComplete)
       } catch {
-        setSetupComplete(true) // fail open — don't block login on setup check failure
+        setSetupComplete(true)
       }
     }
+
+    await loadModules()
   }
 
   const logout = async () => {
@@ -76,12 +108,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.clear()
     setUser(null)
     setSetupComplete(true)
+    setEnabledModules(ALL_NIXSERVER_MODULE_IDS)
   }
 
   const markSetupComplete = () => setSetupComplete(true)
+  const hasModule = (id: NixserverModuleId) => enabledModules.includes(id)
 
   return (
-    <AuthContext.Provider value={{ user, loading, setupComplete, markSetupComplete, login, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      setupComplete,
+      enabledModules,
+      hasModule,
+      markSetupComplete,
+      login,
+      logout,
+    }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,8 +1,25 @@
-# NixPanel Changelog
+﻿# NixPanel Changelog
 
 All notable changes to NixPanel are documented here.
 Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH.
 Pre-1.0 versions treat MINOR as feature releases and PATCH as bug fixes.
+
+---
+
+## [0.7.0] - 2026-04-19
+
+### Features
+- **Module registry** - added backend module registration and environment-driven section enablement so NixServer admin areas can be packaged as explicit modules instead of being hardwired into the panel shell.
+- **Accounts module extraction** - moved the Accounts section into dedicated backend and frontend module definitions so routes and navigation now load from module manifests instead of the root app shell.
+
+### Changes
+- **Module-aware admin shell** - NixServer now loads enabled module state after login, hides disabled sections from sidebar navigation, and mounts only the routes owned by enabled modules.
+- **`.env.example`** - documented `NIXSERVER_MODULES` for VM and production setup of modular admin packages.
+
+### Bug Fixes
+- **`Sidebar.tsx` and `SectionCard.tsx`** - fixed the upgrade state typing and icon prop typing so the modularized admin app builds cleanly.
+
+---
 
 ---
 

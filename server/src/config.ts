@@ -10,6 +10,13 @@ function optional(key: string, fallback: string): string {
   return process.env[key] ?? fallback
 }
 
+function csvList(key: string, fallback: string): string[] {
+  return optional(key, fallback)
+    .split(',')
+    .map(value => value.trim().toLowerCase())
+    .filter(Boolean)
+}
+
 export const config = {
   env: optional('NODE_ENV', 'development'),
   isDev: optional('NODE_ENV', 'development') === 'development',
@@ -67,6 +74,10 @@ export const config = {
   licensing: {
     serverUrl: optional('LICENSING_SERVER_URL', 'https://license.nixpanel.io'),
     licenseKey: optional('LICENSE_KEY', ''),
+  },
+
+  modules: {
+    nixserver: csvList('NIXSERVER_MODULES', 'all'),
   },
 
   features: {
